@@ -1,87 +1,80 @@
-# 系統流程圖與使用者操作路徑 (Flowcharts) - 食譜收藏夾系統
+# 系統與使用者流程圖 (FLOWCHART) - 食譜收藏夾系統
 
-以下文件根據現有的 [PRD.md](./PRD.md) 和 [ARCHITECTURE.md](./ARCHITECTURE.md) 設計，透過視覺化圖表釐清使用者的操作路徑與後端的資料流，並定義出各個功能的對應路由。
+本文件依據 [PRD.md](./PRD.md) 和 [ARCHITECTURE.md](./ARCHITECTURE.md) 的規格，繪製「使用者流程圖」與「系統序列圖」，並整理出「功能清單對照表」，以視覺化方式呈現系統藍圖。
 
-## 1. 使用者流程圖（User Flow）
+## 1. 使用者流程圖 (User Flow)
 
-此流程圖呈現一般使用者從進入網站開始，可能採取的各項操作行為。包含了「身份驗證」、「瀏覽與搜尋」以及「食譜管理」等核心情境。
+此流程圖展示使用者進入系統後的各種操作路徑，包含瀏覽、搜尋、註冊登入及食譜管理等行為。
 
 ```mermaid
-flowchart TD
-  A([使用者開啟網頁]) --> B[首頁 / 搜尋入口]
+flowchart LR
+    Start([使用者首頁 / 訪客]) --> VisitList[瀏覽公開食譜清單]
+    Start --> Search[使用搜尋功能]
+    Start --> Auth{是否擁有會員帳號？}
 
-  %% 搜尋與瀏覽分支
-  B --> C{選擇搜尋方式}
-  C -->|關鍵字搜尋| D[食譜列表頁]
-  C -->|食材組合過濾| E[對應食材食譜列表頁]
-  
-  D --> F[單一食譜詳情頁]
-  E --> F
-  
-  %% 會員與登入分支
-  B --> G{會員狀態}
-  G -->|未登入| H[登入/註冊頁面]
-  H -->|成功| B
-  
-  G -->|已登入| I[會員中心 / 我的收藏]
-  I --> J{操作項目}
-  
-  %% 增刪改查分支
-  J -->|新增| K[填寫新建食譜表單]
-  K -->|儲存| L([資料庫處理並重導覽])
-  L --> F
-  
-  J -->|查看與管理個人食譜| D
-  D -->|若為自己擁有的食譜| M{編輯或刪除?}
-  M -->|編輯| N[填寫編輯食譜表單]
-  N -->|儲存| L
-  M -->|刪除| O([確認刪除重導向])
-  O --> I
+    Search --> KeywordSearch[輸入關鍵字尋找食譜]
+    Search --> IngredientSearch[輸入多樣食材組合找靈感]
+
+    Auth -->|否| Register[進入註冊頁面]
+    Auth -->|是| Login[進入登入頁面]
+    
+    Register --> Login
+    Login --> MemberDash([會員專屬空間])
+
+    MemberDash --> ViewMyRecipes[檢視自己的食譜收藏]
+    MemberDash --> AddRecipe[新增食譜與食材]
+    MemberDash --> EditRecipe[修改/編輯現有食譜]
+    MemberDash --> DeleteRecipe[刪除不需保留的食譜]
+    MemberDash --> Logout([登出系統])
 ```
 
-## 2. 系統序列圖（Sequence Diagram）
+## 2. 系統序列圖 (Sequence Diagram)
 
-此圖以「**使用者新增食譜**」這項操作為例，詳細描繪了整個系統後端（MVC 架構）的運作順序——從網頁送出請求到資料庫存取並回傳重新導向的流程。
+以下序列圖以「**使用者新增食譜**」這項核心功能為例，展示資料由前端傳遞至後端進行處理並儲存的完整步驟。
 
 ```mermaid
 sequenceDiagram
-  actor User as 使用者
-  participant Browser as 瀏覽器
-  participant Route as Flask Route (Controller)
-  participant Model as Model (資料庫互動層)
-  participant DB as SQLite DB
-  
-  User->>Browser: 填寫「新增食譜表單」並點擊送出
-  Browser->>Route: 發送 POST /recipes 請求 (夾帶表單資料)
-  
-  Route->>Route: 1. 驗證使用者是否已登入
-  Route->>Route: 2. 驗證表單輸入 (如：標題是否空白)
-  
-  Route->>Model: 呼叫 Recipe.create(data)
-  Model->>DB: 執行 INSERT INTO recipes ...
-  DB-->>Model: 回傳新記錄的建立狀態 (ID)
-  Model-->>Route: 回傳新建食譜的物件
-  
-  Route-->>Browser: 回傳 HTTP 302 Redirect 重導向至 /recipes/{id} (詳情頁)
-  Browser->>User: 顯示已成功新增的食譜頁面
+    actor User as 使用者
+    participant Browser as 瀏覽器 (HTML/JS)
+    participant Flask as Flask 路由 (Controller)
+    participant Model as Recipe 模型 (Model)
+    participant DB as SQLite 資料庫
+
+    User->>Browser: 填寫食譜名稱、步驟與多樣食材並點擊送出
+    Browser->>Flask: 發送 POST 請求至 /recipe/new
+    Flask->>Flask: 驗證使用者是否已登入及輸入格式
+    alt 驗證失敗
+        Flask-->>Browser: 返回錯誤訊息提示 (Flash)
+        Browser-->>User: 畫面顯示「輸入有誤」
+    else 驗證成功
+        Flask->>Model: 解析表單，呼叫新增食譜函式並帶入參數
+        Model->>DB: INSERT INTO recipes (建立食譜主表)
+        DB-->>Model: 回傳 recipe_id
+        Model->>DB: INSERT INTO ingredients (建立新食材)
+        Model->>DB: INSERT INTO recipe_ingredient_map (建立多對多關聯)
+        DB-->>Model: 儲存成功
+        Model-->>Flask: 回傳建立成功狀態
+        Flask-->>Browser: HTTP 302 重導向 (Redirect) 至該食譜單一內頁
+        Browser-->>User: 畫面顯示新增好的食譜詳情
+    end
 ```
 
 ## 3. 功能清單對照表
 
-本清單列出未來將實作的功能，以及對應的 URL 路徑 (Routes) 和 HTTP 請求方法。由於原生 HTML 表單僅支援 GET 與 POST，故我們在更新/刪除資源時會透過 `POST` 方法加上特定後綴路徑來實作。
+此表格列出本專案核心功能與對應的 URL 設計、HTTP 方法。此設計遵守了 RESTful 精神與本專案的 Blueprint 拆分原則。
 
-| 功能模塊 | 具體功能描述 | HTTP 方法 | URL 路徑 (Route) | 備註 |
-| --- | --- | --- | --- | --- |
-| **公開瀏覽** | 網站首頁 | GET | `/` | 顯示搜尋框與推薦食譜 |
-| | 食譜列表與搜尋結果 | GET | `/recipes` | 若帶有 `?q=` 參數則為關鍵字搜尋 |
-| | 食材組合過濾搜尋 | GET | `/recipes/search_by_ingredients` | 依據選擇的多樣食材進行過濾 |
-| | 檢視單一食譜詳情 | GET | `/recipes/<int:recipe_id>` | 查看公開的食譜 |
-| **會員管理** | 註冊帳號頁面與處理 | GET / POST | `/register` | 包含頁面渲染(GET)與表單送出(POST) |
-| | 登入頁面與處理 | GET / POST | `/login` | 驗證帳密並建立 Session |
-| | 登出處理 | GET | `/logout` | 清除使用者 Session |
-| **食譜管理<br>(需登入)** | 新增食譜頁面 | GET | `/recipes/new` | 提供空白輸入表單 |
-| | 儲存新食譜資料 | POST | `/recipes` | 將表單接收並寫入資料庫 |
-| | 編輯食譜頁面 | GET | `/recipes/<int:recipe_id>/edit` | 將既有資料填入表單讓使用者修改 |
-| | 儲存修改的食譜 | POST | `/recipes/<int:recipe_id>/update` | 儲存使用者更新的資料 |
-| | 刪除食譜 | POST | `/recipes/<int:recipe_id>/delete` | 驗證擁有者身分或管理員權限後刪除 |
-| **後台管理** | 管理員儀表板 | GET | `/admin` | 僅允許管理員檢視全域食譜與用戶列表 |
+| 功能區塊 | 功能名稱 | URL 路徑 | HTTP 方法 | 備註說明 |
+| :--- | :--- | :--- | :--- | :--- |
+| **公開瀏覽** | 首頁 (最新食譜列表) | `/` | GET | 訪客不需登入即可觀看 |
+| | 檢視食譜詳細內容 | `/recipe/<id>` | GET | 顯示食譜做法與配料 |
+| | 關鍵字搜尋食譜 | `/search` | GET | 帶入查詢參數 `?q=xxx` |
+| | 食材組合搜尋推薦 | `/search/ingredients` | GET | 帶入查詢參數 `?items=蛋,番茄` |
+| **會員認證** | 註冊新帳號 | `/auth/register` | GET, POST | GET 取表單，POST 動作 |
+| | 會員登入 | `/auth/login` | GET, POST | |
+| | 會員登出 | `/auth/logout` | GET | 登出並清除 Session |
+| **食譜管理** | 檢視個人專屬食譜區 | `/recipe/my` | GET | 需登入，列出該會員所建食譜 |
+| | 新增食譜 | `/recipe/new` | GET, POST | 需登入，填寫各種欄位 |
+| | 編輯食譜 | `/recipe/<id>/edit` | GET, POST | 只能修改自己名下的食譜 |
+| | 刪除食譜 | `/recipe/<id>/delete`| POST | 同上，透過獨立 POST 接口防誤刪 |
+| **系統管理** | 後台資料全覽 | `/admin` | GET | 僅限特定身分存取 (Admin) |
+| | 強制下架違規食譜 | `/admin/recipe/<id>/delete` | POST | 系統管理員專屬權限 |
