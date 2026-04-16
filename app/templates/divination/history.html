@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4 mt-2 border-bottom border-secondary pb-3">
+    <h3 class="fw-bold m-0" style="color: var(--primary-color);">我的專屬紀錄區 📜</h3>
+    <a href="{{ url_for('divination.index') }}" class="btn btn-outline-light rounded-pill px-4">返回占卜大廳</a>
+</div>
+
+<div class="row pb-5 mt-4">
+    <div class="col-12">
+        <div class="card bg-transparent border-0">
+            <div class="table-responsive rounded-4 overflow-hidden" style="border: 1px solid rgba(212,175,55,0.3);">
+                <table class="table table-dark table-hover align-middle mb-0" style="--bs-table-bg: rgba(0,0,0,0.5);">
+                    <thead style="background: rgba(212,175,55,0.1);">
+                        <tr>
+                            <th class="ps-4 py-3 text-warning">占卜時間</th>
+                            <th class="py-3 text-warning">種類</th>
+                            <th class="py-3 text-warning">所問之事</th>
+                            <th class="py-3 text-warning">抽得結果</th>
+                            <th class="pe-4 py-3 text-end text-warning">操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for div in divs %}
+                        <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+                            <td class="ps-4 text-light opacity-75">{{ div.created_at[:16] }}</td>
+                            <td>
+                                {% if div.type == 'temple' %}
+                                <span class="badge border border-danger text-danger">靈籤</span>
+                                {% else %}
+                                <span class="badge border border-info text-info">塔羅</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-truncate" style="max-width: 200px;">{{ div.question }}</td>
+                            <td class="fw-bold" style="color: var(--primary-color);">{{ div.result }}</td>
+                            <td class="pe-4 text-end">
+                                <a href="{{ url_for('divination.result', id=div.id) }}" class="btn btn-sm btn-outline-light rounded-pill me-2">詳解</a>
+                                <form action="{{ url_for('divination.delete', id=div.id) }}" method="POST" class="d-inline" onsubmit="return confirm('確定要刪除這筆紀錄嗎？');">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill">刪除</button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr><td colspan="5" class="text-center py-5 text-muted">目前還沒有任何占卜紀錄。前往大廳尋求指引吧！</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

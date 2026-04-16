@@ -13,12 +13,12 @@ def create_app():
     
     # 註冊 Blueprints
     from app.routes.auth import auth_bp
-    from app.routes.recipe import recipe_bp
-    from app.routes.admin import admin_bp
+    from app.routes.divination import divination_bp
+    from app.routes.donation import donation_bp
     
     app.register_blueprint(auth_bp, url_prefix='/auth')
-    app.register_blueprint(recipe_bp)
-    app.register_blueprint(admin_bp, url_prefix='/admin')
+    app.register_blueprint(divination_bp) # uses / and /divination
+    app.register_blueprint(donation_bp, url_prefix='/donation')
     
     return app
 

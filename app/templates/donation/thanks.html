@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="row justify-content-center mt-5">
+    <div class="col-lg-6 text-center text-light">
+        <!-- 煙火或光芒動效 -->
+        <div class="position-relative mb-4">
+            <div style="font-size: 6rem; position: relative; z-index: 2; animation: pulse 2s infinite;">🎇</div>
+            <div style="position: absolute; top:50%; left:50%; transform:translate(-50%,-50%); width: 150px; height: 150px; background: radial-gradient(circle, rgba(212,175,55,0.4) 0%, rgba(0,0,0,0) 70%); z-index:1;"></div>
+        </div>
+        
+        <h2 class="fw-bold mb-3" style="color: var(--primary-color);">感恩您的隨喜護持！</h2>
+        <p class="lead mb-4 opacity-75">本系統已收到您的香油錢 <strong class="fs-4 text-white">NT$ {{ amount }}</strong> 元。<br>神明已降下賜福，願您平安喜樂，萬事如意。</p>
+        
+        <div class="mystic-card py-4 mb-5" style="background: rgba(212, 175, 55, 0.1);">
+            <h4 class="mb-3 text-warning">線上虛擬感謝狀</h4>
+            <p class="mb-0">茲感謝您發心護持「祈福與占卜系統」</p>
+            <p class="fs-4 fst-italic mt-2 mb-0" style="color: var(--primary-color); font-family: cursive;">功德無量</p>
+        </div>
+        
+        <a href="{{ url_for('divination.index') }}" class="btn btn-outline-light rounded-pill px-5 btn-lg">返回占卜大廳</a>
+    </div>
+</div>
+<style>
+    @keyframes pulse {
+        0% { transform: scale(1); opacity: 1; }
+        50% { transform: scale(1.1); opacity: 0.8; }
+        100% { transform: scale(1); opacity: 1; }
+    }
+</style>
+{% endblock %}

@@ -1,31 +1,32 @@
+PRAGMA foreign_keys = ON;
+
+-- 使用者
 CREATE TABLE IF NOT EXISTS users (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    username TEXT UNIQUE NOT NULL,
+    username TEXT NOT NULL UNIQUE,
     password_hash TEXT NOT NULL,
-    is_admin INTEGER DEFAULT 0,
-    created_at TEXT DEFAULT CURRENT_TIMESTAMP
+    is_admin INTEGER NOT NULL DEFAULT 0,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE IF NOT EXISTS recipes (
+-- 占卜紀錄
+CREATE TABLE IF NOT EXISTS divinations (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     user_id INTEGER NOT NULL,
-    title TEXT NOT NULL,
-    steps TEXT NOT NULL,
-    is_public INTEGER DEFAULT 0,
-    cover_image TEXT,
-    created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+    type TEXT NOT NULL,
+    question TEXT NOT NULL,
+    result TEXT NOT NULL,
+    explanation TEXT,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
-CREATE TABLE IF NOT EXISTS ingredients (
+-- 香油錢隨喜紀錄
+CREATE TABLE IF NOT EXISTS donations (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    name TEXT UNIQUE NOT NULL
-);
-
-CREATE TABLE IF NOT EXISTS recipe_ingredient_map (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    recipe_id INTEGER NOT NULL,
-    ingredient_id INTEGER NOT NULL,
-    FOREIGN KEY(recipe_id) REFERENCES recipes(id) ON DELETE CASCADE,
-    FOREIGN KEY(ingredient_id) REFERENCES ingredients(id) ON DELETE CASCADE
+    user_id INTEGER NOT NULL,
+    amount INTEGER NOT NULL,
+    status TEXT DEFAULT 'completed',
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
 );

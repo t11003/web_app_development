@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-6 col-md-8 text-center mt-4">
+        <div class="mb-4" style="font-size: 5rem;">⛩️</div>
+        <h2 class="fw-bold mb-3" style="color: var(--primary-color);">誠心求籤 (觀音靈籤)</h2>
+        <p class="mb-5 opacity-75">在心中默念您的姓名、出生年月日、住址，以及您目前遭遇的困難與疑問。想清楚後，填寫您的疑惑並點擊擲筊。</p>
+        
+        <div class="mystic-card">
+            <form method="POST" action="">
+                <div class="mb-4 text-start">
+                    <label class="form-label fw-bold" style="color: var(--primary-color);">所求何事？</label>
+                    <textarea class="form-control" name="question" rows="4" placeholder="例如：弟子信女，想問下半年的工作轉換是否順利..." required></textarea>
+                </div>
+                
+                <div class="d-grid mt-4">
+                    <button type="submit" class="btn btn-custom btn-lg py-3 fs-5">祈求並擲筊</button>
+                </div>
+            </form>
+        </div>
+        
+        <div class="mt-4 opacity-50 small">
+            ※ 系統將模擬擲出聖筊的瞬間，結果將自動保存至您的個人歷史紀錄。
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="row justify-content-center mt-3">
+    <div class="col-lg-8">
+        <div class="mystic-card">
+            <div class="text-center mb-5 border-bottom border-secondary pb-4">
+                <h4 class="text-muted mb-2">您所抽到的是</h4>
+                <h1 class="display-4 fw-bold" style="color: var(--primary-color);">{{ div.result }}</h1>
+                <div class="mt-3 opacity-75 badge bg-dark text-light fs-6">
+                    占卜類型：{% if div.type == 'temple' %}觀音靈籤{% else %}塔羅牌{% endif %}
+                </div>
+            </div>
+
+            <div class="mb-5">
+                <h5 class="fw-bold text-muted mb-3" style="color: var(--primary-color) !important;">您的疑惑：</h5>
+                <div class="p-3 rounded-2" style="background: rgba(0,0,0,0.3); border-left: 4px solid var(--primary-color);">
+                    <p class="mb-0 fs-5">{{ div.question }}</p>
+                </div>
+            </div>
+
+            <div class="mb-5">
+                <h5 class="fw-bold text-muted mb-3" style="color: var(--primary-color) !important;">神明與宇宙的回應：</h5>
+                <div class="p-4 rounded-3" style="background: rgba(255,255,255,0.05); white-space: pre-wrap; font-size: 1.15rem; line-height: 1.8;">{{ div.explanation }}</div>
+            </div>
+            
+            <div class="text-center mt-5 pt-3 border-top border-secondary opacity-75">
+                <p class="small mb-4">紀錄於：{{ div.created_at[:16] }}</p>
+            </div>
+            
+            <div class="d-flex justify-content-center gap-3">
+                <a href="{{ url_for('divination.history') }}" class="btn btn-outline-light rounded-pill px-4">查看歷史紀錄</a>
+                <a href="{{ url_for('donation.donate') }}" class="btn btn-custom rounded-pill px-4">前往線上隨喜</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

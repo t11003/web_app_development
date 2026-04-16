@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row mb-5 align-items-center">
+    <div class="col-md-12 text-center mb-5 mt-5">
+        <h1 class="display-3 fw-bold mb-4" style="color: var(--primary-color); letter-spacing: 2px;">尋求宇宙與神明的指引</h1>
+        <p class="lead text-light mb-4 opacity-75">無論是傳統廟宇的聖意，或是西方神祕學的卡牌，<br>在此處靜下心來，誠心默念您的疑問。</p>
+    </div>
+</div>
+
+<div class="row justify-content-center g-5">
+    <div class="col-lg-5">
+        <div class="mystic-card text-center h-100" style="background: rgba(139, 0, 0, 0.2);">
+            <div class="mb-4" style="font-size: 4rem;">🏮</div>
+            <h2 class="fw-bold mb-3" style="color: var(--primary-color);">觀世音靈籤</h2>
+            <p class="opacity-75 mb-4">源自傳統廟宇信仰。請誠心稟報本名、生辰、住址與所求之事，擲出聖筊即可得籤。</p>
+            <a href="{{ url_for('divination.temple_draw') }}" class="btn btn-custom btn-lg w-100">前往求籤</a>
+        </div>
+    </div>
+    <div class="col-lg-5">
+        <div class="mystic-card text-center h-100" style="background: rgba(26, 26, 46, 0.4);">
+            <div class="mb-4" style="font-size: 4rem;">🔮</div>
+            <h2 class="fw-bold mb-3" style="color: var(--primary-color);">塔羅牌占卜</h2>
+            <p class="opacity-75 mb-4">透過西方神秘學大阿爾克那牌的指引，探索潛意識與未來的共鳴。適合感情與人生抉擇。</p>
+            <a href="{{ url_for('divination.tarot_draw') }}" class="btn btn-outline-light btn-lg w-100" style="color: var(--primary-color); border-color: var(--primary-color);">抽取專屬卡牌</a>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-5 pt-5 text-center mb-5">
+    <div class="col-12">
+        <h4 class="fw-bold mb-3">感念恩賜，線上隨喜</h4>
+        <p class="opacity-75 mb-4">若您覺得指示對您有所幫助，您可以進行線上香油錢捐獻，這將轉換為系統營運的能量亦累積您的福報。</p>
+        <a href="{{ url_for('donation.donate') }}" class="text-decoration-none fs-5" style="color: var(--primary-color); border-bottom: 1px dashed var(--primary-color);">👉 點我前往捐獻結緣</a>
+    </div>
+</div>
+{% endblock %}

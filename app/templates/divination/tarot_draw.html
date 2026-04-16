@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-6 col-md-8 text-center mt-4">
+        <div class="mb-4" style="font-size: 5rem;">🔮</div>
+        <h2 class="fw-bold mb-3" style="color: var(--primary-color);">塔羅牌占卜</h2>
+        <p class="mb-5 opacity-75">深呼吸三次，將您的心智集中在您想詢問的事情上。準備好後，寫下您的問題並點擊抽取塔羅牌，傾聽潛意識的回音。</p>
+        
+        <div class="mystic-card">
+            <form method="POST" action="">
+                <div class="mb-4 text-start">
+                    <label class="form-label fw-bold" style="color: var(--primary-color);">您想詢問宇宙什麼問題？</label>
+                    <textarea class="form-control" name="question" rows="4" placeholder="例如：我想知道這段感情未來的走向..." required></textarea>
+                </div>
+                
+                <div class="d-grid mt-4">
+                    <button type="submit" class="btn btn-outline-light btn-lg py-3 fs-5" style="border-color: var(--primary-color); color: var(--primary-color);">抽取一張塔羅牌</button>
+                </div>
+            </form>
+        </div>
+        
+        <div class="mt-4 opacity-50 small">
+            ※ 塔羅占卜結果將自動保存至您的專屬紀錄區。
+        </div>
+    </div>
+</div>
+{% endblock %}

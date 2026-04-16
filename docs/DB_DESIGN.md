@@ -1,77 +1,63 @@
-# 資料庫設計文件 (DB_DESIGN)
+# 祈福與算命占卜系統 - 資料庫設計 (Database Design)
 
-## 1. ER 圖
+## 1. 實體關聯圖 (ER Diagram)
 
 ```mermaid
 erDiagram
-    USER {
-        integer id PK
+    users {
+        int id PK
         string username
         string password_hash
         boolean is_admin
         datetime created_at
     }
-    RECIPE {
-        integer id PK
-        integer user_id FK
-        string title
-        string steps
-        boolean is_public
-        string cover_image
+    divinations {
+        int id PK
+        int user_id FK
+        string type
+        string question
+        string result
+        text explanation
         datetime created_at
     }
-    INGREDIENT {
-        integer id PK
-        string name
+    donations {
+        int id PK
+        int user_id FK
+        int amount
+        string status
+        datetime created_at
     }
-    RECIPE_INGREDIENT_MAP {
-        integer id PK
-        integer recipe_id FK
-        integer ingredient_id FK
-    }
-
-    USER ||--o{ RECIPE : "creates"
-    RECIPE ||--o{ RECIPE_INGREDIENT_MAP : "has"
-    INGREDIENT ||--o{ RECIPE_INGREDIENT_MAP : "is part of"
+    users ||--o{ divinations : "performs"
+    users ||--o{ donations : "makes"
 ```
 
-## 2. 資料表詳細說明
+## 2. 資料表定義 (Table Definitions)
 
-### 2.1 USER (使用者表)
-紀錄註冊會員的資訊。
-- `id`: INTEGER, Primary Key, 自動遞增。
-- `username`: TEXT, 必填, 唯一, 使用者的登入帳號或信箱。
-- `password_hash`: TEXT, 必填, 儲存 bcrypt 加密後的密碼。
-- `is_admin`: INTEGER, 區分是否為管理員 (0: 否, 1: 是)，預設為 0。
-- `created_at`: TEXT, 帳號建立時間 (ISO 8601 格式)。
+### 2.1 users (使用者表)
+| 欄位名稱 (Field) | 資料型別 (Type) | 約束條件 (Constraints) | 說明 (Description) |
+|---|---|---|---|
+| id | INTEGER | PRIMARY KEY AUTOINCREMENT | 使用者唯一識別碼 |
+| username | TEXT | UNIQUE, NOT NULL | 登入帳號或信箱 |
+| password_hash | TEXT | NOT NULL | 加密後的密碼 |
+| is_admin | INTEGER | DEFAULT 0 | 系統管理員標記 |
+| created_at | DATETIME | DEFAULT CURRENT_TIMESTAMP | 註冊時間 |
 
-### 2.2 RECIPE (食譜表)
-紀錄食譜的主要資訊，關聯至建立該食譜的使用者。
-- `id`: INTEGER, Primary Key, 自動遞增。
-- `user_id`: INTEGER, Foreign Key (對應 USER.id)，必填，表示建立者。
-- `title`: TEXT, 必填，食譜名稱。
-- `steps`: TEXT, 必填，料理步驟說明。
-- `is_public`: INTEGER, 是否公開 (0: 私密, 1: 公開)，預設為 0。
-- `cover_image`: TEXT, 封面圖片的檔案路徑 (可為 Null)。
-- `created_at`: TEXT, 食譜建立時間 (ISO 8601 格式)。
+### 2.2 divinations (占卜紀錄表)
+| 欄位名稱 (Field) | 資料型別 (Type) | 約束條件 (Constraints) | 說明 (Description) |
+|---|---|---|---|
+| id | INTEGER | PRIMARY KEY AUTOINCREMENT | 紀錄唯一識別碼 |
+| user_id | INTEGER | FOREIGN KEY (users.id) | 建立紀錄的使用者 ID |
+| type | TEXT | NOT NULL | 占卜類型 (如：'temple', 'tarot') |
+| question | TEXT | NOT NULL | 詢問的事項/問題 |
+| result | TEXT | NOT NULL | 抽出來的結果（例如：第23籤、力量牌正位） |
+| explanation | TEXT | | 系統回傳的籤詩解析或占卜詳解 |
+| created_at | DATETIME | DEFAULT CURRENT_TIMESTAMP | 占卜時間 |
 
-### 2.3 INGREDIENT (食材表)
-全域的食材清單，避免重複的食材名稱。
-- `id`: INTEGER, Primary Key, 自動遞增。
-- `name`: TEXT, 必填, 唯一，食材名稱 (例如: "番茄", "雞蛋")。
-
-### 2.4 RECIPE_INGREDIENT_MAP (食譜食材關聯表)
-處理食譜與食材的「多對多 (Many-to-Many)」關係。
-- `id`: INTEGER, Primary Key, 自動遞增。
-- `recipe_id`: INTEGER, Foreign Key (對應 RECIPE.id)，必填。
-- `ingredient_id`: INTEGER, Foreign Key (對應 INGREDIENT.id)，必填。
-
-## 3. SQL 建表語法
-存放於 `database/schema.sql`，提供直接產生上述資料表的語法。
-
-## 4. Python Model 程式碼
-存放於 `app/models/`，採用 `sqlite3` 原生套件實作。
-- `app/models/database.py`: 共用的資料庫連線獲取與初始化與法。
-- `app/models/user.py`: 處理使用者的 CRUD。
-- `app/models/recipe.py`: 處理食譜的 CRUD。
-- `app/models/ingredient.py`: 處理食材庫與食譜食材映射關係的 CRUD。
+### 2.3 donations (香油錢隨喜紀錄表)
+| 欄位名稱 (Field) | 資料型別 (Type) | 約束條件 (Constraints) | 說明 (Description) |
+|---|---|---|---|
+| id | INTEGER | PRIMARY KEY AUTOINCREMENT | 捐款紀錄唯一識別碼 |
+| user_id | INTEGER | FOREIGN KEY (users.id) | 捐款的使用者 ID |
+| amount | INTEGER | NOT NULL | 隨喜金額 |
+| status | TEXT | DEFAULT 'completed' | 交易狀態字串 |
+| created_at | DATETIME | DEFAULT CURRENT_TIMESTAMP | 交易時間 |

@@ -72,7 +72,7 @@ def login():
                 session['username'] = user['username']
                 session['is_admin'] = user['is_admin']
                 flash('登入成功！', 'success')
-                return redirect(url_for('recipe.index'))
+                return redirect(url_for('divination.index'))
             
         flash('帳號或密碼錯誤！', 'danger')
         return redirect(url_for('auth.login'))

@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="row justify-content-center mt-4">
+    <div class="col-lg-6 col-md-8 text-center text-light">
+        <div class="mb-4" style="font-size: 5rem;">💰</div>
+        <h2 class="fw-bold mb-3" style="color: var(--primary-color);">線上隨喜添香油</h2>
+        <p class="mb-5 opacity-75">布施結善緣，每一分捐獻都將轉換為護持系統的能量，並為您累積無邊福報。</p>
+        
+        <div class="mystic-card">
+            <form method="POST" action="{{ url_for('donation.process') }}">
+                <div class="mb-4 text-start">
+                    <label class="form-label fw-bold" style="color: var(--primary-color);">請輸入隨喜金額 (TWD)</label>
+                    <div class="input-group input-group-lg">
+                        <span class="input-group-text bg-dark text-warning border-warning">NT$</span>
+                        <input type="number" class="form-control" name="amount" min="1" placeholder="例如：100" required>
+                    </div>
+                </div>
+                
+                <div class="mb-4 text-start">
+                    <label class="form-label fw-bold" style="color: var(--primary-color);">選擇結緣付款方式</label>
+                    <select class="form-control" required disabled>
+                        <option>信用卡一次付清 (金流模擬展示)</option>
+                        <option>Line Pay</option>
+                    </select>
+                </div>
+                
+                <div class="d-grid mt-4 pt-3 border-top border-secondary">
+                    <button type="submit" class="btn btn-custom btn-lg py-3 fw-bold fs-5">送出功德金，確認隨喜</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
