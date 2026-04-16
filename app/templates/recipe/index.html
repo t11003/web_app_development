@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block content %}
+<h2 class="mb-4 fw-bold">最新公開食譜 🍴</h2>
+<form class="mb-4 d-flex" action="{{ url_for('recipe.search') }}">
+    <input type="text" name="q" class="form-control me-2" placeholder="搜尋食譜名稱或步驟..." required>
+    <button type="submit" class="btn btn-dark">搜尋</button>
+</form>
+<div class="row">
+    {% for r in recipes %}
+    <div class="col-md-4 mb-4">
+        <div class="card h-100 shadow-sm border-0 auth-card p-3" style="margin-top: 0;">
+            <h5 class="card-title fw-bold">{{ r.title }}</h5>
+            <p class="card-text text-muted mb-4">{{ r.steps[:30] }}...</p>
+            <a href="{{ url_for('recipe.detail', id=r.id) }}" class="btn btn-outline-primary mt-auto">觀看食譜</a>
+        </div>
+    </div>
+    {% else %}
+    <p>目前沒有發現任何資料。</p>
+    {% endfor %}
+</div>
+{% endblock %}

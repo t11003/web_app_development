@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="auth-card" style="margin-top: 1vmin;">
+    <h3 class="fw-bold mb-4 text-danger">🛡️ 系統後台總覽</h3>
+    
+    <h5 class="fw-bold mb-3">👤 會員清單 (Total: {{ users|length }})</h5>
+    <ul class="list-group list-group-flush mb-5">
+        {% for u in users %}
+        <li class="list-group-item bg-transparent">{{ u.username }} </li>
+        {% endfor %}
+    </ul>
+
+    <h5 class="fw-bold mb-3">🍳 全站食譜控管 (Total: {{ recipes|length }})</h5>
+    <table class="table table-hover bg-transparent">
+        <thead>
+            <tr><th>名稱</th><th>操作</th></tr>
+        </thead>
+        <tbody>
+            {% for r in recipes %}
+            <tr>
+                <td><a href="{{ url_for('recipe.detail', id=r.id) }}">{{ r.title }}</a></td>
+                <td>
+                    <form action="{{ url_for('admin.delete_recipe', id=r.id) }}" method="POST">
+                        <button class="btn btn-sm btn-danger">強制下架</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

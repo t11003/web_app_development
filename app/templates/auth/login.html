@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6 col-lg-5">
+        <div class="auth-card">
+            <div class="text-center mb-4">
+                <h3 class="fw-bold mb-2">歡迎回來 👋</h3>
+                <p class="text-muted">請登入以存取您的專屬料理空間</p>
+            </div>
+            
+            <form method="POST" action="{{ url_for('auth.login') }}">
+                <div class="mb-3">
+                    <label for="username" class="form-label fw-semibold">帳號 (信箱)</label>
+                    <input type="text" class="form-control" id="username" name="username" placeholder="請輸入帳號" required autofocus>
+                </div>
+                
+                <div class="mb-4">
+                    <label for="password" class="form-label fw-semibold">密碼</label>
+                    <input type="password" class="form-control" id="password" name="password" placeholder="請輸入密碼" required>
+                </div>
+                
+                <div class="d-grid gap-2">
+                    <button type="submit" class="btn btn-custom btn-lg">立即登入</button>
+                </div>
+            </form>
+            
+            <div class="text-center mt-4 pt-3 border-top">
+                <p class="text-muted mb-0">還沒有帳號嗎？ 
+                    <a href="{{ url_for('auth.register') }}" class="text-decoration-none fw-bold" style="color: var(--primary-color);">免費註冊</a>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

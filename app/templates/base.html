@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>食譜收藏夾 Recipe Hub</title>
+    
+    <!-- Google Fonts: Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Bootstrap 5 CSS CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary-color: #ff6b6b;
+            --secondary-color: #feca57;
+            --dark-color: #222f3e;
+            --light-color: #f8f9fa;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            color: #333;
+        }
+        
+        /* Modern Navbar */
+        .navbar-custom {
+            background-color: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+        
+        .navbar-brand {
+            font-weight: 700;
+            color: var(--primary-color) !important;
+            letter-spacing: -0.5px;
+        }
+
+        .nav-link {
+            font-weight: 500;
+            color: var(--dark-color) !important;
+            transition: color 0.3s ease;
+        }
+        
+        .nav-link:hover {
+            color: var(--primary-color) !important;
+        }
+
+        /* Glassmorphism Card for forms */
+        .auth-card {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            border-radius: 16px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+            padding: 2.5rem;
+            margin-top: 5vmin;
+        }
+        
+        /* Buttons */
+        .btn-custom {
+            background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+            border: none;
+            color: white;
+            font-weight: 600;
+            border-radius: 8px;
+            padding: 10px 20px;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        
+        .btn-custom:hover {
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 15px rgba(255, 107, 107, 0.3);
+        }
+        
+        /* Main Container */
+        .main-container {
+            flex: 1;
+            padding: 2rem 0;
+        }
+        
+        /* Form Inputs */
+        .form-control {
+            border-radius: 8px;
+            padding: 0.75rem 1rem;
+            border: 1px solid #e1e5eb;
+            background-color: #fdfdfd;
+        }
+        .form-control:focus {
+            box-shadow: 0 0 0 0.25rem rgba(255, 107, 107, 0.25);
+            border-color: var(--primary-color);
+        }
+
+        /* Flash Message */
+        .alert-flash {
+            border-radius: 10px;
+            border: none;
+            font-weight: 500;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-custom sticky-top">
+        <div class="container">
+            <a class="navbar-brand d-flex align-items-center gap-2" href="{{ url_for('recipe.index') }}">
+                <!-- SVG Icon for Recipe -->
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+                </svg>
+                食譜收藏夾
+            </a>
+            <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
+                <ul class="navbar-nav align-items-center gap-2">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('recipe.index') }}">首頁</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('recipe.ingredient_search') }}">找靈感 (食材組合)</a>
+                    </li>
+                    {% if session.user_id %}
+                        <!-- 會員登入後狀態 -->
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('recipe.my_recipes') }}">我的食譜</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('recipe.new_recipe') }}">新增食譜</a>
+                        </li>
+                        {% if session.is_admin %}
+                        <li class="nav-item">
+                            <a class="nav-link text-danger" href="{{ url_for('admin.index') }}">管理後台</a>
+                        </li>
+                        {% endif %}
+                        <li class="nav-item ms-lg-3">
+                            <a class="btn btn-outline-secondary rounded-pill px-3" href="{{ url_for('auth.logout') }}">登出 ({{ session.username }})</a>
+                        </li>
+                    {% else %}
+                        <!-- 訪客狀態 -->
+                        <li class="nav-item ms-lg-3">
+                            <a class="nav-link" href="{{ url_for('auth.login') }}">登入</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="btn btn-custom rounded-pill px-4" href="{{ url_for('auth.register') }}">免費註冊</a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content wrapper -->
+    <main class="container main-container">
+        <!-- Flash Messages -->
+        <div class="row justify-content-center mb-3">
+            <div class="col-md-8 col-lg-6">
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                  {% if messages %}
+                    {% for category, message in messages %}
+                      <div class="alert alert-{{ category if category not in ['error', 'message'] else 'danger' }} alert-dismissible fade show alert-flash shadow-sm" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                      </div>
+                    {% endfor %}
+                  {% endif %}
+                {% endwith %}
+            </div>
+        </div>
+        
+        <!-- Content Block -->
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Bootstrap 5 Script CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

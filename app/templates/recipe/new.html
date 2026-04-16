@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="auth-card" style="margin-top: 1vmin;">
+    <h3 class="fw-bold mb-4">紀錄新食譜 ✍️</h3>
+    <form method="POST" action="{{ url_for('recipe.new_recipe') }}">
+        <div class="mb-3">
+            <label class="form-label fw-bold">食譜名稱</label>
+            <input type="text" name="title" class="form-control" required placeholder="如：美味番茄炒蛋">
+        </div>
+        <div class="mb-3">
+            <label class="form-label fw-bold">關聯食材</label>
+            <input type="text" name="ingredients" class="form-control" placeholder="請用半形逗號分隔，如：番茄, 雞蛋, 鹽巴">
+        </div>
+        <div class="mb-3">
+            <label class="form-label fw-bold">詳細步驟</label>
+            <textarea name="steps" class="form-control" rows="6" required></textarea>
+        </div>
+        <div class="form-check mb-4">
+            <input class="form-check-input" type="checkbox" name="is_public" id="is_public" checked>
+            <label class="form-check-label" for="is_public">設為公開食譜</label>
+        </div>
+        <button type="submit" class="btn btn-custom px-5">建立</button>
+    </form>
+</div>
+{% endblock %}

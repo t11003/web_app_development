@@ -1,64 +1,116 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash
+from flask import Blueprint, render_template, request, redirect, url_for, flash, session
+from app.models.recipe import Recipe
+from app.models.ingredient import Ingredient
+from app.models.user import User
 
 recipe_bp = Blueprint('recipe', __name__)
 
 @recipe_bp.route('/', methods=['GET'])
 def index():
-    """
-    GET: 首頁。呼叫 Model 取得所有公開的食譜，並呈現於 index.html。
-    """
-    pass
+    recipes = Recipe.get_all_public()
+    return render_template('recipe/index.html', recipes=recipes)
 
 @recipe_bp.route('/search', methods=['GET'])
 def search():
-    """
-    GET: 關鍵字搜尋功能。藉由 `?q=xxx` 獲取參數，回傳匹配的食譜至 search_results.html。
-    """
-    pass
+    q = request.args.get('q', '')
+    recipes = Recipe.search_by_keyword(q)
+    return render_template('recipe/search_results.html', recipes=recipes, keyword=q)
 
 @recipe_bp.route('/search/ingredients', methods=['GET'])
 def ingredient_search():
-    """
-    GET: 食材組合搜尋功能。接收 `?items=蛋,番茄`，切分後至 DB 過濾出完全包含該些食材的食譜，呈現於 ingredient_search.html。
-    """
-    pass
+    items_str = request.args.get('items', '')
+    if items_str.strip():
+        items = [i.strip() for i in items_str.split(',') if i.strip()]
+        recipes = Ingredient.search_recipes_by_ingredients(items)
+    else:
+        items = []
+        recipes = []
+    return render_template('recipe/ingredient_search.html', recipes=recipes, items=items)
 
 @recipe_bp.route('/recipe/<int:id>', methods=['GET'])
 def detail(id):
-    """
-    GET: 單一食譜詳情頁面。根據食譜 ID 取得細節、步驟與配料，呈現於 detail.html，若找不到回傳 404。
-    """
-    pass
+    recipe = Recipe.get_by_id(id)
+    if not recipe:
+        flash('食譜不存在', 'danger')
+        return redirect(url_for('recipe.index'))
+    if not recipe['is_public']:
+        if session.get('user_id') != recipe['user_id'] and not session.get('is_admin'):
+            flash('您沒有權限檢視此食譜', 'danger')
+            return redirect(url_for('recipe.index'))
+    ingredients = Ingredient.get_ingredients_for_recipe(id)
+    author = User.get_by_id(recipe['user_id'])
+    return render_template('recipe/detail.html', recipe=recipe, ingredients=ingredients, author=author)
 
 @recipe_bp.route('/recipe/my', methods=['GET'])
 def my_recipes():
-    """
-    GET: 專門列出登入用戶自己建立的食譜列表以供管理。需要驗證登入權限。呈現於 my_recipes.html。
-    """
-    pass
+    if not session.get('user_id'):
+        flash('請先登入', 'danger')
+        return redirect(url_for('auth.login'))
+    recipes = Recipe.get_by_user_id(session['user_id'])
+    return render_template('recipe/my_recipes.html', recipes=recipes)
 
 @recipe_bp.route('/recipe/new', methods=['GET', 'POST'])
 def new_recipe():
-    """
-    GET: 顯示新增食譜的表單 (new.html)。
-    POST: 接收食譜資料與食材清單，寫入資料庫並建立多對多關聯。
-    需要驗證登入權限。
-    """
-    pass
+    if not session.get('user_id'):
+        flash('請先登入', 'danger')
+        return redirect(url_for('auth.login'))
+    if request.method == 'POST':
+        title = request.form.get('title')
+        steps = request.form.get('steps')
+        is_public = 1 if request.form.get('is_public') else 0
+        ingredients_input = request.form.get('ingredients')
+        if not title or not steps:
+            flash('標題與步驟為必填', 'danger')
+            return redirect(url_for('recipe.new_recipe'))
+        recipe_id = Recipe.create(session['user_id'], title, steps, is_public, None)
+        if ingredients_input:
+            items = [i.strip() for i in ingredients_input.split(',')]
+            for item in items:
+                if item:
+                    ing_id = Ingredient.create(item)
+                    Ingredient.link_recipe_ingredient(recipe_id, ing_id)
+        flash('建立成功！', 'success')
+        return redirect(url_for('recipe.detail', id=recipe_id))
+    return render_template('recipe/new.html')
 
 @recipe_bp.route('/recipe/<int:id>/edit', methods=['GET', 'POST'])
 def edit_recipe(id):
-    """
-    GET: 顯示編輯食譜表單 (edit.html)，並預留當前食譜內容變數。
-    POST: 接收編輯後的新資料與食材異動並儲存。
-    需要驗證登入權限，並且限制僅有食譜建立者 (user_id) 可見與修改。失敗拋錯 403 Forbidden。
-    """
-    pass
+    if not session.get('user_id'):
+        flash('請先登入', 'danger')
+        return redirect(url_for('auth.login'))
+    recipe = Recipe.get_by_id(id)
+    if not recipe or recipe['user_id'] != session['user_id']:
+        flash('權限不足', 'danger')
+        return redirect(url_for('recipe.index'))
+    if request.method == 'POST':
+        title = request.form.get('title')
+        steps = request.form.get('steps')
+        is_public = 1 if request.form.get('is_public') else 0
+        ingredients_input = request.form.get('ingredients')
+        Recipe.update(id, title=title, steps=steps, is_public=is_public)
+        Ingredient.clear_recipe_ingredients(id)
+        if ingredients_input:
+            items = [i.strip() for i in ingredients_input.split(',')]
+            for item in items:
+                if item:
+                    ing_id = Ingredient.create(item)
+                    Ingredient.link_recipe_ingredient(id, ing_id)
+        flash('更新成功！', 'success')
+        return redirect(url_for('recipe.detail', id=id))
+    current_ingredients = Ingredient.get_ingredients_for_recipe(id)
+    ing_str = ", ".join([i['name'] for i in current_ingredients])
+    return render_template('recipe/edit.html', recipe=recipe, ingredients=ing_str)
 
 @recipe_bp.route('/recipe/<int:id>/delete', methods=['POST'])
 def delete_recipe(id):
-    """
-    POST: 刪除指定的食譜。需再三確保為本人操作。刪除後預設連鎖會移除多對多食材關聯表內對應資料。
-    重導向至我的食譜列表首頁。
-    """
-    pass
+    if not session.get('user_id'):
+        flash('請先登入', 'danger')
+        return redirect(url_for('auth.login'))
+    recipe = Recipe.get_by_id(id)
+    if not recipe or recipe['user_id'] != session['user_id']:
+        flash('權限不足', 'danger')
+        return redirect(url_for('recipe.index'))
+    Ingredient.clear_recipe_ingredients(id)
+    Recipe.delete(id)
+    flash('刪除成功', 'success')
+    return redirect(url_for('recipe.my_recipes'))
