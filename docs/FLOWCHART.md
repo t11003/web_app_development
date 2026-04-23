@@ -1,79 +1,81 @@
-# 流程圖設計文件：食譜管理系統
+# 流程圖文件 (Flowchart)
 
-本文件根據產品需求文件 (PRD) 與系統架構文件，視覺化使用者在食譜管理系統中的操作流程、系統背後的處理步驟，以及功能與路由的對照表。
+## 專案名稱：個人記帳簿 (Personal Expense Tracker)
 
-## 1. 使用者流程圖（User Flow）
+### 1. 使用者流程圖 (User Flow)
 
-以下流程圖說明當使用者開啟網頁後，可以執行的各項功能及頁面轉換路徑：
+此流程圖展示使用者進入「個人記帳簿」系統後，所能進行的操作路徑，包含瀏覽總覽、新增收支紀錄、編輯與刪除等核心功能。
 
 ```mermaid
 flowchart LR
-    A([使用者開啟網站]) --> B[首頁 - 食譜列表]
+    A([使用者造訪首頁]) --> B[首頁 - 財務總覽 (Dashboard)]
     
-    B --> C{選擇欲執行的功能}
+    B --> C{要執行什麼操作？}
     
-    %% 新增食譜路線
-    C -->|點擊「新增食譜」| D[填寫新增表單頁面]
-    D -->|送出表單| B
+    C -->|查看明細| D[記帳紀錄清單頁 (瀏覽所有的收支明細)]
+    C -->|新增紀錄| E[新增收支頁面 (填寫表單)]
     
-    %% 搜尋/篩選路線
-    C -->|輸入「關鍵字 / 食材」| E[呈現篩選後的列表]
-    E --> C
+    D -->|點擊編輯| F[編輯收支頁面 (修改表單)]
+    D -->|點擊刪除| G[確認刪除視窗]
     
-    %% 查看與編輯/刪除路線
-    C -->|點擊某個「食譜項目」| F[食譜明細頁面]
-    F --> G{在明細頁中選擇操作}
+    E -->|送出表單| H((儲存成功))
+    F -->|送出修改| H
+    G -->|確認| I((刪除成功))
     
-    G -->|返回| B
-    G -->|點擊「編輯食譜」| H[填寫編輯表單頁面]
-    H -->|送出表單| F
-    G -->|點擊「刪除食譜」| I[確認並刪除]
-    I -->|刪除成功| B
+    H -->|自動重導向| D
+    I -->|自動重導向| D
+    D -->|返回| B
 ```
 
-## 2. 系統序列圖（Sequence Diagram）
+---
 
-以下序列圖以核心功能**「新增食譜」**為例，展示從使用者介面送出資料到成功寫入資料庫並重導向的完整過程：
+### 2. 系統序列圖 (Sequence Diagram)
+
+此序列圖描述「使用者點擊新增一筆記帳紀錄」到「資料被寫入 SQLite 並重新顯示列表」的完整系統流轉過程。
 
 ```mermaid
 sequenceDiagram
     actor User as 使用者
-    participant Browser as 瀏覽器 (模板渲染)
-    participant Flask Route as 路由 (Controller)
-    participant Model as 邏輯模型 (Model)
+    participant Browser as 瀏覽器 (HTML/CSS/JS)
+    participant Route as Flask Route (expense.py)
+    participant Model as Flask Model (database.py)
     participant DB as SQLite 資料庫
-
-    User->>Browser: 在表單頁面填妥食譜資訊並點擊送出
-    Browser->>Flask Route: 發送 POST /recipes 請求 (攜帶表單資料)
     
-    Note over Flask Route, DB: 開始處理新增邏輯
+    User->>Browser: 1. 在新增表單填寫金額、分類並點擊「送出」
+    Browser->>Route: 2. 發送 POST /expense/add 請求 (附帶表單資料)
     
-    Flask Route->>Model: 呼叫 Recipe.create(data) 傳入解析後的資料
-    Model->>DB: 執行 SQL INSERT INTO recipes ... 
-    DB-->>Model: 回傳寫入成功訊息
-    Model-->>Flask Route: 回傳新建立的 Recipe 物件
+    Route->>Route: 3. 驗證表單資料是否齊全與合法
     
-    Note over Flask Route, Browser: 處理畫面重導向
-    
-    Flask Route-->>Browser: 回傳 302 Redirect 至首頁 (食譜列表)
-    Browser->>Flask Route: 發送 GET / 請求
-    Flask Route->>Model: 取得最新所有食譜列表
-    Model->>DB: 執行 SELECT * FROM recipes
-    DB-->>Model: 回傳新列資料
-    Model-->>Flask Route: 列表資料
-    Flask Route-->>Browser: 使用最新資料重新渲染 index.html (首頁)
+    alt 資料無效
+        Route-->>Browser: 4a. 顯示錯誤訊息 (400 Bad Request)
+    else 資料有效
+        Route->>Model: 4b. 呼叫 add_expense(amount, category, note, date)
+        Model->>DB: 5. 執行 INSERT INTO expenses 語法
+        
+        DB-->>Model: 6. 回傳資料庫執行成功結果
+        Model-->>Route: 7. 回傳新增成功結果
+        
+        Route-->>Browser: 8. 回傳 HTTP 302 Redirect 重導向
+        Browser->>Route: 9. 發送 GET /expense (重新載入列表頁)
+        Route->>Model: 10. 取得最新資料並由 Jinja2 渲染
+        Route-->>Browser: 11. 顯示最新的記帳清單頁面
+    end
 ```
 
-## 3. 功能清單對照表
+---
 
-對應上述流程與 PRD 需求，以下為系統功能對應的 URL 路徑與 HTTP 方法整理，提供後續 API/路由設計的參考：
+### 3. 功能清單與 API 對照表 (Routes & Endpoint Mapping)
 
-| 功能項目說明 | HTTP 方法 | 預計對應的 URL 路徑 | View (Jinja2) | 備註 |
-| --- | :---: | --- | --- | --- |
-| **首頁 / 所有食譜總覽** | `GET` | `/` 或 `/recipes` | `index.html` | 可結合查詢參數 `?q=關鍵字` 處理搜尋與食材推薦功能。 |
-| **進入新增食譜表單頁** | `GET` | `/recipes/new` | `form.html` | 呈現空白的輸入表單。 |
-| **提交新增食譜資料** | `POST` | `/recipes` | *(處理無畫面)* | 處理完後 302 重導向回首頁。 |
-| **查看單一食譜明細** | `GET` | `/recipes/<id>` | `show.html` | 顯示特定 ID 的食譜完整步驟與內容。 |
-| **進入編輯食譜表單頁** | `GET` | `/recipes/<id>/edit` | `form.html` | 呈現帶有原始資料的編輯表單。 |
-| **提交更新的食譜資料** | `POST` | `/recipes/<id>/update` | *(處理無畫面)* | 使用 HTML form 故用 POST，更新完成後重導回明細頁。 |
-| **確定刪除食譜** | `POST` | `/recipes/<id>/delete` | *(處理無畫面)* | 使用 form 觸發 POST，刪除完成後重導回首頁。 |
+根據在架構中所定義的 Flask Routes，各功能的預期存取路徑與對應 HTTP 方法如下：
+
+| 功能描述 | 模組 (Route) | HTTP 方法 | URL 路徑 (Endpoint) | 返回操作 (Response) |
+| --- | --- | --- | --- | --- |
+| **首頁：財務總覽** | index.py | `GET` | `/` | 回傳 `index.html` (含統計圖表) |
+| **收支清單：檢視所有紀錄** | expense.py | `GET` | `/expense` | 回傳 `expense_list.html` |
+| **新增紀錄：顯示表單** | expense.py | `GET` | `/expense/add` | 回傳 `expense_form.html` (供填寫) |
+| **新增紀錄：送出資料** | expense.py | `POST` | `/expense/add` | 資料庫 INSERT，重導向至 `/expense` |
+| **編輯紀錄：顯示表單** | expense.py | `GET` | `/expense/edit/<id>` | 回傳 `expense_form.html` (帶入原資料)|
+| **編輯紀錄：送出修改** | expense.py | `POST` | `/expense/edit/<id>` | 資料庫 UPDATE，重導向至 `/expense` |
+| **刪除紀錄：送出刪除** | expense.py | `POST` | `/expense/delete/<id>`| 資料庫 DELETE，重導向至 `/expense` |
+
+> **備註**：由於一般的 HTML `<form>` 只能使用 GET 與 POST，因此刪除與修改送出暫時不使用 RESTful 嚴格定義的 `PUT`/`DELETE`，而統一使用 `POST`。
