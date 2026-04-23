@@ -1,57 +1,64 @@
-# DB Design Document — 資料庫設計文件
+# 資料庫設計文件 (DB Design)
 
-## 1. ER 圖
+## 1. ER 圖 (實體關係圖)
 
 ```mermaid
 erDiagram
-  RECIPES {
+  CATEGORIES {
     INTEGER id PK
-    TEXT title "食譜名稱"
-    TEXT description "簡介"
-    TEXT ingredients "所需食材"
-    TEXT steps "烹飪步驟"
-    TEXT created_at "建立時間"
-    TEXT updated_at "最後更新時間"
+    TEXT name
+    TEXT type
+    INTEGER is_preset
   }
+  EXPENSES {
+    INTEGER id PK
+    INTEGER amount
+    INTEGER category_id FK
+    TEXT note
+    TEXT date
+    TEXT created_at
+  }
+  BUDGETS {
+    INTEGER id PK
+    INTEGER category_id FK
+    INTEGER monthly_limit
+    TEXT month
+  }
+  
+  CATEGORIES ||--o{ EXPENSES : "contains"
+  CATEGORIES ||--o{ BUDGETS : "has"
 ```
 
 ## 2. 資料表詳細說明
 
-### `recipes` 資料表
-本系統採用單一資料表設計以符合 MVP 需求，各欄位詳細定義如下：
+### CATEGORIES (分類資料表)
+負責儲存收支的類別（例如：飲食、交通、薪資等），包含系統預設分類與使用者自訂分類。
+- `id` (INTEGER): Primary Key，自動遞增。
+- `name` (TEXT): 分類名稱，必填。
+- `type` (TEXT): 收支類型，限定為 `'income'` (收入) 或 `'expense'` (支出)，必填。
+- `is_preset` (INTEGER): 判斷是否為預設分類，`1` 為預設，`0` 為使用者自訂。預設值為 `1`。
 
-| 欄位名稱 | 型別 | 必填 | 說明 |
-| --- | --- | --- | --- |
-| `id` | `INTEGER` | 是 | Primary Key, 自動遞增 (AUTOINCREMENT)。 |
-| `title` | `TEXT` | 是 | 食譜名稱。 |
-| `description` | `TEXT` | 否 | 食譜的簡單介紹。 |
-| `ingredients` | `TEXT` | 是 | 食譜的所需食材，為求簡便與彈性，儲存為純文字 (可依照換行或逗點分隔)。未來依食材推薦將利用 `LIKE` 查詢運算實作。 |
-| `steps` | `TEXT` | 是 | 烹飪步驟，儲存為純文字即可。 |
-| `created_at` | `TEXT` | 是 | 建立時間，使用 `CURRENT_TIMESTAMP` 的 ISO 格式儲存。 |
-| `updated_at` | `TEXT` | 是 | 最後更新時間，編輯資料時觸發更新。 |
+### EXPENSES (收支紀錄表)
+儲存每一筆記帳明細，是最核心的交易紀錄表。
+- `id` (INTEGER): Primary Key，自動遞增。
+- `amount` (INTEGER): 交易金額，必填。
+- `category_id` (INTEGER): Foreign Key，對應 `categories.id`，必填。
+- `note` (TEXT): 消費備註與說明文字，選填。
+- `date` (TEXT): 交易發生日期，格式為 `YYYY-MM-DD`，必填。
+- `created_at` (TEXT): 該筆資料寫入系統的時間戳記 (ISO 格式)，必填。
 
-## 3. SQL 建表語法
+### BUDGETS (預算設定表)
+因應 Nice to Have 需求所規劃的各分類月預算設定。
+- `id` (INTEGER): Primary Key，自動遞增。
+- `category_id` (INTEGER): Foreign Key，對應 `categories.id`，必填。
+- `monthly_limit` (INTEGER): 設定的該月預算金額上限，必填。
+- `month` (TEXT): 對應的月份，格式為 `YYYY-MM`，必填。
 
-實作的 SQL 建表存放於 `database/schema.sql` 中：
+## 3. SQL 建表語法與位置
+完整的 SQLite CREATE 語法以及預設值的 INSERT 腳本，已產出並儲存於專案內部的 `database/schema.sql` 檔案中。
 
-```sql
-CREATE TABLE IF NOT EXISTS recipes (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    title TEXT NOT NULL,
-    description TEXT,
-    ingredients TEXT NOT NULL,
-    steps TEXT NOT NULL,
-    created_at TEXT DEFAULT CURRENT_TIMESTAMP,
-    updated_at TEXT DEFAULT CURRENT_TIMESTAMP
-);
-```
-
-## 4. Python Model
-
-封裝的檔案位於 `app/models/recipe.py`。
-使用內建的 `sqlite3` 操作 `instance/database.db`，並支援：
-- `create(data)`
-- `get_all(query=None)`: 實作按標題與食材進行簡單字串 `LIKE` 搜尋。
-- `get_by_id(recipe_id)`
-- `update(recipe_id, data)`
-- `delete(recipe_id)`
+## 4. Python Model 實作
+後端以 Python `sqlite3` 提供單純且高效的連線存取：
+- **`app/models/db.py`**: 提供統一的 `get_db()` 資料庫連線函式，並負責處理資料庫初始化 (`init_db`)。
+- **`app/models/category.py`**: 分類模型的 CRUD。
+- **`app/models/expense.py`**: 紀錄模型的 CRUD，包含合併分類查詢的 JOIN 指令。
