@@ -1,84 +1,80 @@
-# 系統架構設計文件：食譜管理系統
+# 系統架構文件 (Architecture) - 個人記帳簿系統
 
 ## 1. 技術架構說明
 
-本專案採用輕量級的 Python 網頁框架設計，不採用前後端分離，由後端直接渲染 HTML 頁面返回給使用者的瀏覽器。
+根據 PRD 提出的需求與技術限制，我們選擇以下技術組合：
 
-### 選用技術與原因
 - **後端框架：Python + Flask**
-  - **原因**：Flask 相較於 Django 更為輕量與彈性，非常適合用來開發這類中小型內容管理系統。其學習曲線平緩且易於快速打造原型。
+  - **原因**：Flask 相較於 Django 更為輕量與彈性，非常適合用來開發這類功能集中且單純的個人記帳簿系統。
 - **模板引擎：Jinja2**
-  - **原因**：與 Flask 高度整合，能直接將後端資料無縫嵌入前端 HTML 中，有效降低開發複雜度，並且內建自動轉義防護 XSS 攻擊。
+  - **原因**：Jinja2 與 Flask 高度整合，能直接將後端資料無縫嵌入前端 HTML 中，有效降低開發複雜度。不需要建置前後端分離架構，所有頁面直接在伺服器渲染回傳。
 - **資料庫：SQLite**
-  - **原因**：不需額外安裝資料庫伺服器，資料儲存在單一檔案中，易於備份與部署，完全符合 MVP (最小可行性產品) 與個人使用的效能需求。
+  - **原因**：這是一個「零配置」的關聯式資料庫，所有資料都儲存在單一檔案中，無需額外安裝或管理龐大的資料庫伺服器（如 MySQL 或 PostgreSQL），非常適合單機版或個人的網頁應用程式。
 
 ### Flask MVC 模式說明
-雖然 Flask 本身不強制要求 MVC 架構，但我們將依循 MVC (Model-View-Controller) 的概念來組織程式碼：
-- **Model (模型)**：負責與 SQLite 資料庫溝通，定義「食譜 (Recipe)」、「標籤 (Tag)」等資料結構與操作。
-- **View (視圖)**：由 Jinja2 模板擔任，負責產生最終的 HTML 介面，呈現資料給使用者。
-- **Controller (控制器)**：由 Flask 的路由 (Routes) 擔任，負責接收使用者請求、調用 Model 獲取或更新資料、接著把資料傳遞給 View 進行渲染。
+雖然 Flask 不像某些框架有嚴格的 MVC (Model-View-Controller) 規定，但我們依舊會採用類似概念來分類程式碼：
+- **Model (資料模型)**：負責與 SQLite 資料庫溝通，定義「收入 (Income)」跟「支出 (Expense)」這些資料表記錄，並撰寫新增、修改、刪除的方法。
+- **View (視圖)**：負責呈現使用者見到的 UI 介面，在系統中就是由 **Jinja2** 組裝並渲染的 HTML 檔案。
+- **Controller (控制器)**：負責接收網頁請求與商業邏輯，在系統中就是 **Flask 的 Routes (路由)**。它會接收來自瀏覽器的操作（如：「新增一筆晚餐支出」），並指揮 Model 將結果儲存，最後選擇對應的 Jinja2 Template (View) 來顯示結果給使用者。
+
+---
 
 ## 2. 專案資料夾結構
 
-以下是本專案的資料夾結構與各階層職責說明：
+保持架構簡潔且易於擴充，我們規劃了如下資料夾結構：
 
 ```text
 web_app_development/
-├── app/                  # 應用程式主目錄
-│   ├── __init__.py       # 初始化 Flask 應用程式與套件配置
-│   ├── models/           # (Model) 資料庫模型定義與操作
-│   │   └── recipe.py     # 食譜相關的資料庫邏輯
-│   ├── routes/           # (Controller) Flask 路由處理邏輯
-│   │   ├── __init__.py
-│   │   └── recipe.py     # 處理食譜的增刪改查與搜尋推薦路由
-│   ├── templates/        # (View) Jinja2 HTML 頁面模板
-│   │   ├── base.html     # 共用版型 (標題、導覽列)
-│   │   └── recipes/      # 食譜相關頁面
-│   │       ├── index.html   # 食譜列表/首頁
-│   │       ├── show.html    # 食譜明細頁面
-│   │       └── form.html    # 新增與編輯表單
-│   └── static/           # css, js, 圖片等靜態資源
-│       ├── css/
-│       │   └── style.css
-│       └── images/       # 存放使用者預設圖片等
-├── instance/             # 存放敏感或變動性的本地端資料
-│   └── database.db       # SQLite 資料庫檔案
-├── docs/                 # 專案文件
-│   ├── PRD.md            # 產品需求文件
-│   └── ARCHITECTURE.md   # 系統架構文件
-├── requirements.txt      # Python 依賴套件清單
-└── app.py                # 應用程式啟動入口
+├── app/
+│   ├── models/           ← (Model) 資料庫模型：定義資料表與資料存取邏輯
+│   ├── routes/           ← (Controller) Flask 路由：處理各個頁面的請求
+│   ├── templates/        ← (View) Jinja2 HTML 模板：畫面呈現 (如 Base 共用版型)
+│   └── static/           ← CSS / JS 靜態資源：例如自定義的樣式表或圖表的 JS
+├── instance/
+│   └── database.db       ← SQLite 資料庫檔案：系統自動產生，存放實際記帳資料
+├── docs/                 
+│   ├── PRD.md            ← 產品需求文件
+│   └── ARCHITECTURE.md   ← 系統架構文件 (本檔案)
+├── app.py                ← 應用程式入口點：負責啟動 Flask 伺服器並註冊各路由
+└── requirements.txt      ← 專案依賴套件表：記錄需要的模組清單
 ```
+
+---
 
 ## 3. 元件關係圖
 
-以下展示使用者與系統互動時，各元件如何協作產生回應：
+以下是用以表示使用者在操作記帳系統時，各元件如何互相配合的流程關係：
 
 ```mermaid
-sequenceDiagram
-    participant Browser as 瀏覽器 (使用者)
-    participant Route as Flask Route (Controller)
-    participant Model as Model (資料操作)
-    participant DB as SQLite 資料庫
-    participant Template as Jinja2 Template (View)
+flowchart TD
+    Browser["瀏覽器 \n(Browser)"]
+    Router["Flask Route \n(Controller)"]
+    Model["資料模型 \n(Model)"]
+    DB[("SQLite 資料庫 \n(Database)")]
+    Template["Jinja2 Template \n(View)"]
 
-    Browser->>Route: 1. 發送 HTTP 請求 (例如：搜尋食譜)
-    Route->>Model: 2. 呼叫邏輯獲取資料
-    Model->>DB: 3. 執行 SQL 查詢
-    DB-->>Model: 4. 回傳查詢結果
-    Model-->>Route: 5. 回傳 Python 結構化資料
-    Route->>Template: 6. 將資料傳入模板渲染
-    Template-->>Route: 7. 產生最終 HTML 字串
-    Route-->>Browser: 8. 回傳 HTTP 回應 (顯示網頁)
+    Browser -- "1. 請求 (如新增支出或看報表)" --> Router
+    Router -- "2. 查詢/寫入資料" --> Model
+    Model -- "3. 讀寫執行" --> DB
+    DB -- "4. 回傳資料" --> Model
+    Model -- "5. 將資料回傳" --> Router
+    Router -- "6. 傳入模板渲染" --> Template
+    Template -- "7. 渲染 HTML" --> Router
+    Router -- "8. 回傳頁面給使用者" --> Browser
 ```
+
+---
 
 ## 4. 關鍵設計決策
 
-1. **採用 SSR (伺服器端渲染) 而非 SPA (單頁應用)**
-   - 作為初期 MVP 專案，使用 Flask + Jinja2 直接渲染頁面是最快看到成果的方式，避免了繁瑣的 API 介接與跨域問題，能讓重點集中於食譜核心邏輯。
-2. **採用 SQLite 單一檔案資料庫**
-   - 避免引入如 MySQL 或 PostgreSQL 帶來額外的效能與維護成本，SQLite 非常輕量且零設定，對於主要是單人使用的儲存與搜尋已綽綽有餘。
-3. **Model 與 Controller 邏輯分離**
-   - 雖然初期專案較小，但不把所有的資料庫存取層直接寫在 `app.py` 或具體的 route 中。將資料庫層抽象出 `app/models/`，能確保留下擴展「食譜標籤系統」與「食材推薦演算法」的彈性空間。
-4. **使用模板繼承機制 (共用 Base)**
-   - 透過 `base.html` 共用 Header、導覽列及自訂的 CSS 資源。日後不論是新增編輯頁面還是推薦食譜頁面，只需專注頁面本體，可達到最好的維護性並維持設計的一致感。
+1. **採用單體式與伺服器端渲染 (SSR)**  
+   - *原因*：為了加速開發並符合不需前後端分離的限制，我們選擇將所有的畫面依賴 Jinja2 渲染完成。相較於架設一套 React/Vue 的架構，這種方式不必花時間設計複雜的 JSON API，能讓我們將重點集中在核心財務紀錄功能。
+
+2. **目錄模組化設計 (`app/models` 與 `app/routes`)**  
+   - *原因*：雖然這是一個 MVP 小型系統，但提早將路由與資料庫模型進行拆分，不僅能避免 `app.py` 變得過於龐大，如果未來要擴增新的圖表功能 (Nice to Have) 或資料匯出功能，也能保持優良的維護性。
+
+3. **每月固定扣款的簡化實作**  
+   - *原因*：PRD 中有提到「每月固定扣款」(Should Have) 功能。初期的 MVP 設計可由後端邏輯判斷是否跨月並「自動在背景新增記錄」，而非導入 Celery 等複雜的背景定期任務佇列，如此一來既能確保功能實作也維持了架構的輕量。
+
+4. **採用關聯式資料庫架構**  
+   - *原因*：財務記帳系統的特徵在於有明確且規律的資料屬性，例如：分類、金額、日期等。故比起 NoSQL，使用關聯式體系的 SQLite 能帶來更好的資料一致性限制，若之後系統要向外擴展 (Scale up)，轉換至 PostgreSQL 的門檻也會較低。
