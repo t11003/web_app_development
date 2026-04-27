@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-12 col-md-8 col-lg-6">
+        <div class="glass-card p-4 p-md-5">
+            <h3 class="mb-2 text-center fw-semibold"><i class="bi bi-calendar-plus text-warning me-2"></i>記錄固定支出</h3>
+            <p class="text-center text-white-50 mb-5">設定後系統將會在每個月指定的時間自動將其納入總餘額的計算中。</p>
+            
+            <form action="{{ url_for('fixed_deduction.create_fixed_deduction') }}" method="POST">
+                
+                <div class="mb-4">
+                    <label class="form-label text-white-50 fs-6"><i class="bi bi-currency-dollar me-1"></i>每月預設扣款金額</label>
+                    <div class="input-group input-group-lg">
+                        <span class="input-group-text bg-transparent text-white-50 border-secondary border-opacity-50">$</span>
+                        <input type="number" class="form-control text-white fw-bold fs-3 border-secondary border-opacity-50" style="padding-left:0;" name="amount" min="1" required placeholder="例如：299">
+                    </div>
+                </div>
+                
+                <div class="mb-4">
+                    <label class="form-label text-white-50"><i class="bi bi-tags me-1"></i>分類項目</label>
+                    <input type="text" class="form-control form-control-lg border-secondary border-opacity-50 text-white" name="category" required placeholder="例如：Netflix、手機月租費、房租">
+                </div>
+                
+                <div class="mb-5">
+                    <label class="form-label text-white-50"><i class="bi bi-calendar-day me-1"></i>每月幾號扣款 (1-31)</label>
+                    <input type="number" class="form-control form-control-lg border-secondary border-opacity-50 text-white fw-bold" name="deduct_day" min="1" max="31" required placeholder="例：15">
+                </div>
+                
+                <div class="d-grid gap-2">
+                    <button type="submit" class="btn btn-warning btn-lg rounded-pill fw-bold text-dark py-3 shadow-sm">
+                        <i class="bi bi-star-fill me-1 opacity-50"></i> 完成設定
+                    </button>
+                    <a href="{{ url_for('fixed_deduction.index') }}" class="btn btn-link text-white-50 text-decoration-none mt-2 text-center" style="font-size: 0.9rem;">取消並返回清單</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

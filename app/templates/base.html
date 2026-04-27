@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="zh-TW" data-bs-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>個人記帳簿系統</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #130f40 0%, #000000 100%);
+            color: #ffffff;
+            min-height: 100vh;
+        }
+        /* Navbar Glassmorphism */
+        .navbar-glass {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(15px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .navbar-brand {
+            font-weight: 700;
+            background: linear-gradient(90deg, #ff8a00, #e52e71);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        /* Card Glassmorphism */
+        .glass-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease, border-color 0.3s ease;
+        }
+        .glass-card:hover {
+            transform: translateY(-5px);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+        /* Custom Buttons */
+        .btn-custom {
+            background: linear-gradient(90deg, #00C9FF 0%, #92FE9D 100%);
+            border: none;
+            color: #121212;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        .btn-custom:hover {
+            opacity: 0.9;
+            transform: scale(1.05);
+        }
+        .btn-custom-danger {
+            background: linear-gradient(90deg, #f12711 0%, #f5af19 100%);
+            border: none;
+            color: white;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        .btn-custom-danger:hover {
+            opacity: 0.9;
+            transform: scale(1.05);
+        }
+        /* Form controls */
+        .form-control, .form-select {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: #fff;
+        }
+        .form-control:focus, .form-select:focus {
+            background: rgba(255, 255, 255, 0.15);
+            border-color: #92FE9D;
+            color: #fff;
+            box-shadow: 0 0 0 0.25rem rgba(146, 254, 157, 0.25);
+        }
+        /* Table */
+        .table {
+            color: #fff;
+            --bs-table-bg: transparent;
+        }
+        .table tbody tr {
+            transition: background-color 0.2s;
+        }
+        .table tbody tr:hover {
+            background-color: rgba(255, 255, 255, 0.05);
+        }
+        .text-income {
+            color: #92FE9D !important;
+        }
+        .text-expense {
+            color: #ff6b6b !important;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark navbar-glass sticky-top mb-4">
+        <div class="container">
+            <a class="navbar-brand fs-4" href="{{ url_for('main.index') }}">
+                <i class="bi bi-magic me-2"></i>Antigravity 記帳簿
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto text-uppercase tracking-wider fw-semibold">
+                    <li class="nav-item"><a class="nav-link px-3" href="{{ url_for('main.index') }}">儀表板</a></li>
+                    <li class="nav-item"><a class="nav-link px-3" href="{{ url_for('transaction.index') }}">收支紀錄</a></li>
+                    <li class="nav-item"><a class="nav-link px-3" href="{{ url_for('fixed_deduction.index') }}">固定扣款設定</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container pb-5">
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                {% for message in messages %}
+                <div class="alert alert-info alert-dismissible fade show glass-card mb-4 border-0" role="alert" style="border-left: 4px solid #00C9FF !important;">
+                    <i class="bi bi-info-circle me-2"></i>{{ message }}
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert"></button>
+                </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        {% block content %}{% endblock %}
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

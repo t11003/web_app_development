@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-12 col-md-8 col-lg-6">
+        <div class="glass-card p-4 p-md-5">
+            <h3 class="mb-4 text-center fw-semibold">
+                {% if tx_type == 'INCOME' %}
+                    <i class="bi bi-piggy-bank text-income me-2"></i>記錄新收入
+                {% else %}
+                    <i class="bi bi-cart text-expense me-2"></i>記錄新支出
+                {% endif %}
+            </h3>
+            
+            <form action="{{ url_for('transaction.create_transaction') }}" method="POST">
+                <!-- 隱藏欄位紀錄型別 -->
+                <input type="hidden" name="type" value="{{ tx_type }}">
+                
+                <div class="mb-4">
+                    <label class="form-label text-white-50 fs-6"><i class="bi bi-currency-dollar me-1"></i>金額</label>
+                    <div class="input-group input-group-lg">
+                        <span class="input-group-text bg-transparent text-white-50 border-secondary border-opacity-50">$</span>
+                        <input type="number" class="form-control text-white fw-bold fs-3 border-secondary border-opacity-50" style="padding-left:0;" name="amount" min="1" required placeholder="0">
+                    </div>
+                </div>
+                
+                <div class="mb-4">
+                    <label class="form-label text-white-50"><i class="bi bi-tags me-1"></i>收支分類標籤</label>
+                    <input type="text" class="form-control form-control-lg border-secondary border-opacity-50" name="category" required placeholder="例如：餐飲、交通、零用錢...">
+                </div>
+                
+                <div class="mb-5">
+                    <label class="form-label text-white-50"><i class="bi bi-calendar-event me-1"></i>發生日期</label>
+                    <input type="date" class="form-control form-control-lg border-secondary border-opacity-50" name="transaction_date" id="txDate" required>
+                </div>
+                
+                <div class="d-grid gap-2">
+                    <button type="submit" class="btn {% if tx_type == 'INCOME' %}btn-custom{% else %}btn-custom-danger{% endif %} btn-lg rounded-pill fw-bold text-dark py-3 shadow-sm">
+                        <i class="bi bi-check2-circle me-1"></i>儲存紀錄
+                    </button>
+                    <a href="{{ url_for('main.index') }}" class="btn btn-link text-white-50 text-decoration-none mt-2 text-center" style="font-size: 0.9rem;">取消並返回首頁</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    // 預設日期為今天
+    document.getElementById('txDate').valueAsDate = new Date();
+</script>
+{% endblock %}

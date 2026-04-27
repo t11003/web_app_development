@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="glass-card p-4 p-md-5 mb-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h3 class="mb-0 fw-semibold"><i class="bi bi-card-list me-2"></i>所有收支明細</h3>
+    </div>
+    
+    <div class="glass-card p-3 p-md-4 mb-4 border-0" style="background: rgba(0,0,0,0.15);">
+        <form class="row g-3" method="GET" action="{{ url_for('transaction.index') }}">
+            <div class="col-12 col-md-4">
+                <label class="form-label text-white-50"><i class="bi bi-calendar3 me-1"></i>起始日期</label>
+                <input type="date" class="form-control" name="start_date" value="{{ start_date or '' }}">
+            </div>
+            <div class="col-12 col-md-4">
+                <label class="form-label text-white-50"><i class="bi bi-calendar3-fill me-1"></i>結束日期</label>
+                <input type="date" class="form-control" name="end_date" value="{{ end_date or '' }}">
+            </div>
+            <div class="col-12 col-md-4 d-flex align-items-end gap-2">
+                <button type="submit" class="btn btn-custom px-4 flex-grow-1 flex-md-grow-0 fw-bold">篩選</button>
+                <a href="{{ url_for('transaction.index') }}" class="btn btn-outline-light">清除</a>
+            </div>
+        </form>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead>
+                <tr class="text-white-50">
+                    <th class="border-bottom border-secondary border-opacity-50 pb-3">日期</th>
+                    <th class="border-bottom border-secondary border-opacity-50 pb-3">類型</th>
+                    <th class="border-bottom border-secondary border-opacity-50 pb-3">分類項目</th>
+                    <th class="text-end border-bottom border-secondary border-opacity-50 pb-3">產生金額</th>
+                    <th class="text-end border-bottom border-secondary border-opacity-50 pb-3 pe-3">操作</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for tx in transactions %}
+                <tr>
+                    <td class="text-white-50 border-bottom border-light border-opacity-10 py-3">{{ tx.transaction_date }}</td>
+                    <td class="border-bottom border-light border-opacity-10 py-3">
+                        {% if tx.type == 'INCOME' %}
+                            <span class="text-income"><i class="bi bi-arrow-down-circle-fill me-1"></i>收入</span>
+                        {% else %}
+                            <span class="text-expense"><i class="bi bi-arrow-up-circle-fill me-1"></i>支出</span>
+                        {% endif %}
+                    </td>
+                    <td class="border-bottom border-light border-opacity-10 py-3"><span class="badge bg-secondary bg-opacity-25 text-light rounded-pill px-3 py-2">{{ tx.category }}</span></td>
+                    <td class="text-end fw-bold fs-5 border-bottom border-light border-opacity-10 py-3 pe-0 {% if tx.type == 'INCOME' %}text-income{% else %}text-expense{% endif %}">
+                        {% if tx.type == 'INCOME' %}+{% else %}-{% endif %}${{ "{:,}".format(tx.amount) }}
+                    </td>
+                    <td class="text-end border-bottom border-light border-opacity-10 py-3 pe-3">
+                        <form action="{{ url_for('transaction.delete_transaction', record_id=tx.id) }}" method="POST" class="d-inline" onsubmit="return confirm('確定要刪除這筆紀錄嗎？一旦刪除了無法還原喔！');">
+                            <button type="submit" class="btn btn-sm btn-outline-danger border-0"><i class="bi bi-trash3"></i> 刪除</button>
+                        </form>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="5" class="text-center text-white-50 py-5 border-0">
+                        目前搜尋區段內無任何歷史紀錄。
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="glass-card p-4 p-md-5 mb-4">
+    <div class="d-flex justify-content-between align-items-center mb-4 border-bottom border-light border-opacity-10 pb-3">
+        <h3 class="mb-0 fw-semibold"><i class="bi bi-calendar-check text-warning me-2"></i>每月固定扣款設定</h3>
+        <a href="{{ url_for('fixed_deduction.new_fixed_deduction') }}" class="btn btn-warning px-4 rounded-pill fw-bold shadow-sm">
+            <i class="bi bi-plus-circle me-1"></i>新增自動扣款
+        </a>
+    </div>
+    
+    <div class="alert alert-dark bg-transparent border border-light border-opacity-25 text-white-50 p-3 mb-4 d-flex align-items-center glass-card">
+        <i class="bi bi-info-circle-fill me-3 fs-4 text-primary"></i>
+        <div>
+            <p class="mb-0"><strong>什麼是固定扣款？</strong></p>
+            <p class="mb-0 small">系統會在您每個月登入時，檢查預設扣款日是否已到期；一旦到期將會自動為您建立對應的支出紀錄，讓您不必每個月重新記帳。</p>
+        </div>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead>
+                <tr class="text-white-50">
+                    <th class="border-bottom border-secondary border-opacity-50 pb-3">預期扣款日</th>
+                    <th class="border-bottom border-secondary border-opacity-50 pb-3">支出分類項目</th>
+                    <th class="border-bottom border-secondary border-opacity-50 pb-3">扣款金額</th>
+                    <th class="border-bottom border-secondary border-opacity-50 pb-3">上次自動執行月份</th>
+                    <th class="text-end border-bottom border-secondary border-opacity-50 pb-3 pe-3">操作</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in deductions %}
+                <tr>
+                    <td class="border-bottom border-light border-opacity-10 py-3">
+                        <span class="badge bg-secondary bg-opacity-25 border border-secondary border-opacity-25 text-light p-2 rounded-pill fs-6 px-3">
+                            <i class="bi bi-calendar-event me-1"></i>每月 {{ item.deduct_day }} 號
+                        </span>
+                    </td>
+                    <td class="fw-bold fs-5 border-bottom border-light border-opacity-10 py-3">{{ item.category }}</td>
+                    <td class="text-expense fw-bold fs-5 border-bottom border-light border-opacity-10 py-3">-${{ "{:,}".format(item.amount) }}</td>
+                    <td class="text-white-50 border-bottom border-light border-opacity-10 py-3">
+                        {% if item.last_processed_month %}
+                            <i class="bi bi-check-circle-fill text-success me-1"></i>{{ item.last_processed_month }}
+                        {% else %}
+                            <span class="fst-italic opacity-50">尚未遇過扣款期</span>
+                        {% endif %}
+                    </td>
+                    <td class="text-end border-bottom border-light border-opacity-10 py-3 pe-3">
+                        <form action="{{ url_for('fixed_deduction.delete_fixed_deduction', deduction_id=item.id) }}" method="POST" class="d-inline" onsubmit="return confirm('刪除後系統將不再為您自動建立此支出紀錄。確定要刪除嗎？');">
+                            <button type="submit" class="btn btn-sm btn-outline-danger border-0"><i class="bi bi-trash3"></i> 取消設定</button>
+                        </form>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="5" class="text-center text-white-50 py-5 border-0">
+                        <i class="bi bi-wind fs-1 d-block mb-3 opacity-25"></i>
+                        您目前沒有設定任何固定扣款項目。
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

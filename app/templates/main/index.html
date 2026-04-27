@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row g-4 mb-4">
+    <!-- 總餘額卡片 -->
+    <div class="col-12 col-lg-5">
+        <div class="glass-card p-5 h-100 d-flex flex-column justify-content-center align-items-center text-center">
+            <h5 class="text-white-50 text-uppercase tracking-wider mb-2">My Total Balance</h5>
+            <h1 class="display-3 fw-bold mb-4 {% if total_balance >= 0 %}text-income{% else %}text-expense{% endif %}" style="text-shadow: 0 0 20px rgba(146, 254, 157, 0.4);">
+                $<span id="balanceAmount">{{ "{:,}".format(total_balance) }}</span>
+            </h1>
+            <div class="d-flex flex-column flex-sm-row gap-3 w-100 px-3">
+                <a href="{{ url_for('transaction.new_transaction', type='INCOME') }}" class="btn btn-custom flex-grow-1 px-4 py-3 rounded-pill shadow-sm">
+                    <i class="bi bi-piggy-bank me-2 fs-5 text-middle"></i>登錄收入
+                </a>
+                <a href="{{ url_for('transaction.new_transaction', type='EXPENSE') }}" class="btn btn-custom-danger flex-grow-1 px-4 py-3 rounded-pill shadow-sm">
+                    <i class="bi bi-cart me-2 fs-5 text-middle"></i>登錄支出
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 最近收支卡片 -->
+    <div class="col-12 col-lg-7">
+        <div class="glass-card p-4 h-100 d-flex flex-column">
+            <div class="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom border-light border-opacity-10">
+                <h4 class="mb-0 fw-semibold"><i class="bi bi-clock-history me-2"></i>最新紀錄</h4>
+                <a href="{{ url_for('transaction.index') }}" class="btn btn-sm btn-outline-light rounded-pill px-3">檢視全部</a>
+            </div>
+            
+            {% if transactions %}
+            <div class="table-responsive flex-grow-1">
+                <table class="table align-middle mb-0">
+                    <tbody>
+                        {% for tx in transactions %}
+                        <tr>
+                            <td class="text-white-50 border-0 fs-6" style="width: 110px;">{{ tx.transaction_date[5:] }}</td>
+                            <td class="border-0">
+                                {% if tx.type == 'INCOME' %}
+                                    <span class="badge bg-success bg-opacity-25 text-success rounded-pill px-3 py-2 fw-normal"><i class="bi bi-plus-circle me-1"></i>{{ tx.category }}</span>
+                                {% else %}
+                                    <span class="badge bg-danger bg-opacity-25 text-danger rounded-pill px-3 py-2 fw-normal"><i class="bi bi-dash-circle me-1"></i>{{ tx.category }}</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-end fw-bold fs-5 border-0 {% if tx.type == 'INCOME' %}text-income{% else %}text-expense{% endif %}">
+                                {% if tx.type == 'INCOME' %}+{% else %}-{% endif %}${{ "{:,}".format(tx.amount) }}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="text-center text-white-50 flex-grow-1 d-flex flex-column justify-content-center pt-3 pb-5">
+                <i class="bi bi-inbox lh-1 display-1 mb-3 opacity-25"></i>
+                <p class="fs-5">乾乾淨淨！開始記下你的第一筆帳吧</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
