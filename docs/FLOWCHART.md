@@ -1,79 +1,71 @@
-# 流程圖設計文件：食譜管理系統
+# 流程圖設計文件 (Flowcharts) - 個人記帳簿系統
 
-本文件根據產品需求文件 (PRD) 與系統架構文件，視覺化使用者在食譜管理系統中的操作流程、系統背後的處理步驟，以及功能與路由的對照表。
+本文件基於 PRD 的需求與架構設計，展示系統的「使用者流程」與「系統序列流程」，以協助視覺化系統運作方式。
 
-## 1. 使用者流程圖（User Flow）
+## 1. 使用者流程圖 (User Flow)
 
-以下流程圖說明當使用者開啟網頁後，可以執行的各項功能及頁面轉換路徑：
+描述使用者進入系統後，可能進行的各項操作路徑。
 
 ```mermaid
 flowchart LR
-    A([使用者開啟網站]) --> B[首頁 - 食譜列表]
+    Start([使用者開啟網頁]) --> Home[首頁 - 儀表板\n(顯示目前總餘額)]
     
-    B --> C{選擇欲執行的功能}
+    Home --> Action{要執行什麼操作？}
     
-    %% 新增食譜路線
-    C -->|點擊「新增食譜」| D[填寫新增表單頁面]
-    D -->|送出表單| B
+    Action -->|新增收支| AddSelect[選擇新增收入或支出]
+    AddSelect -->|輸入金額與分類| FillForm[填寫資料表單]
+    FillForm --> SubmitAdd[送出儲存]
+    SubmitAdd --> Home
     
-    %% 搜尋/篩選路線
-    C -->|輸入「關鍵字 / 食材」| E[呈現篩選後的列表]
-    E --> C
+    Action -->|查詢或篩選| Records[進入歷史收支紀錄頁面]
+    Records -->|選擇時間區間| Filter[套用日期或月份條件]
+    Filter --> ShowResult[顯示篩選後的收支結果列表]
+    ShowResult --> Home
     
-    %% 查看與編輯/刪除路線
-    C -->|點擊某個「食譜項目」| F[食譜明細頁面]
-    F --> G{在明細頁中選擇操作}
-    
-    G -->|返回| B
-    G -->|點擊「編輯食譜」| H[填寫編輯表單頁面]
-    H -->|送出表單| F
-    G -->|點擊「刪除食譜」| I[確認並刪除]
-    I -->|刪除成功| B
+    Action -->|管理固定扣款| Fixed[進入固定扣款設定頁]
+    Fixed -->|新增固定扣款| AddFixed[填寫每月固定扣款項目]
+    AddFixed --> Home
 ```
 
-## 2. 系統序列圖（Sequence Diagram）
+---
 
-以下序列圖以核心功能**「新增食譜」**為例，展示從使用者介面送出資料到成功寫入資料庫並重導向的完整過程：
+## 2. 系統序列圖 (System Sequence Diagram)
+
+以下以「使用者操作新增一筆支出」為例，展示前端瀏覽器、Flask 路由、Model 與 SQLite 資料庫之間的互動流程。
 
 ```mermaid
 sequenceDiagram
     actor User as 使用者
-    participant Browser as 瀏覽器 (模板渲染)
-    participant Flask Route as 路由 (Controller)
-    participant Model as 邏輯模型 (Model)
+    participant Browser as 瀏覽器 (HTML 介面)
+    participant Flask as Flask Route (Controller)
+    participant Model as Expense Model
     participant DB as SQLite 資料庫
-
-    User->>Browser: 在表單頁面填妥食譜資訊並點擊送出
-    Browser->>Flask Route: 發送 POST /recipes 請求 (攜帶表單資料)
     
-    Note over Flask Route, DB: 開始處理新增邏輯
-    
-    Flask Route->>Model: 呼叫 Recipe.create(data) 傳入解析後的資料
-    Model->>DB: 執行 SQL INSERT INTO recipes ... 
-    DB-->>Model: 回傳寫入成功訊息
-    Model-->>Flask Route: 回傳新建立的 Recipe 物件
-    
-    Note over Flask Route, Browser: 處理畫面重導向
-    
-    Flask Route-->>Browser: 回傳 302 Redirect 至首頁 (食譜列表)
-    Browser->>Flask Route: 發送 GET / 請求
-    Flask Route->>Model: 取得最新所有食譜列表
-    Model->>DB: 執行 SELECT * FROM recipes
-    DB-->>Model: 回傳新列資料
-    Model-->>Flask Route: 列表資料
-    Flask Route-->>Browser: 使用最新資料重新渲染 index.html (首頁)
+    User->>Browser: 點擊「新增支出」，填寫金額與分類
+    User->>Browser: 點擊「送出」按鈕
+    Browser->>Flask: POST /expense/add (傳送表單資料)
+    Flask->>Flask: 驗證接收到的表單格式與資料
+    Flask->>Model: 呼叫 add_expense(amount, category, date)
+    Model->>DB: 執行 INSERT INTO expenses ...
+    DB-->>Model: 回傳寫入成功
+    Model-->>Flask: 處理完成
+    Flask-->>Browser: 重導向 (Redirect) 回首頁
+    Browser-->>User: 顯示最新總餘額與該筆支出紀錄
 ```
+
+---
 
 ## 3. 功能清單對照表
 
-對應上述流程與 PRD 需求，以下為系統功能對應的 URL 路徑與 HTTP 方法整理，提供後續 API/路由設計的參考：
+整理未來需要實作的路由對應表，作為之後 API 設計或模板實作的參考依據。
 
-| 功能項目說明 | HTTP 方法 | 預計對應的 URL 路徑 | View (Jinja2) | 備註 |
-| --- | :---: | --- | --- | --- |
-| **首頁 / 所有食譜總覽** | `GET` | `/` 或 `/recipes` | `index.html` | 可結合查詢參數 `?q=關鍵字` 處理搜尋與食材推薦功能。 |
-| **進入新增食譜表單頁** | `GET` | `/recipes/new` | `form.html` | 呈現空白的輸入表單。 |
-| **提交新增食譜資料** | `POST` | `/recipes` | *(處理無畫面)* | 處理完後 302 重導向回首頁。 |
-| **查看單一食譜明細** | `GET` | `/recipes/<id>` | `show.html` | 顯示特定 ID 的食譜完整步驟與內容。 |
-| **進入編輯食譜表單頁** | `GET` | `/recipes/<id>/edit` | `form.html` | 呈現帶有原始資料的編輯表單。 |
-| **提交更新的食譜資料** | `POST` | `/recipes/<id>/update` | *(處理無畫面)* | 使用 HTML form 故用 POST，更新完成後重導回明細頁。 |
-| **確定刪除食譜** | `POST` | `/recipes/<id>/delete` | *(處理無畫面)* | 使用 form 觸發 POST，刪除完成後重導回首頁。 |
+| 功能名稱 | 說明 | URL 路徑 | HTTP 動作 |
+| --- | --- | --- | --- |
+| **首頁與總餘額** | 顯示當前可用餘額與最近幾筆收支紀錄，若有跨月狀況，載入時負責觸發自動建立固定扣款。 | `/` | `GET` |
+| **新增收入頁面** | 渲染新增收入的表單畫面。 | `/income/add` | `GET` |
+| **處理新增收入** | 處理表單送出的收入資料，寫入後重導至首頁。 | `/income/add` | `POST` |
+| **新增支出頁面** | 渲染新增支出的表單畫面。 | `/expense/add` | `GET` |
+| **處理新增支出** | 處理表單送出的支出資料，寫入後重導至首頁。 | `/expense/add` | `POST` |
+| **收支查詢清單** | 顯示所有紀錄，支援讀取 URL query 參數（如 `?start_date=xxx`）來過濾特定區間。 | `/records` | `GET` |
+| **固定扣款設定頁** | 顯示與管理每月的固定扣款項目。 | `/fixed-deduction` | `GET` |
+| **新增固定扣款** | 處理表單送出的固定扣款資料。 | `/fixed-deduction` | `POST` |
