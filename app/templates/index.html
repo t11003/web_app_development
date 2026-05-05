@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row justify-content-center mb-4">
+    <div class="col-md-6 text-center">
+        <div class="card shadow-sm border-0">
+            <div class="card-body py-4">
+                <h5 class="text-muted mb-2">目前總餘額</h5>
+                <h1 class="display-4 {% if balance >= 0 %}text-success{% else %}text-danger{% endif %} fw-bold">
+                    $ {{ balance }}
+                </h1>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card shadow-sm border-0 mb-5">
+    <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+        <h5 class="mb-0 fw-bold">近期的收支紀錄</h5>
+        <a href="{{ url_for('records.new_record') }}" class="btn btn-sm btn-primary">新增紀錄</a>
+    </div>
+    <div class="card-body p-0">
+        {% if records %}
+            <div class="table-responsive">
+                <table class="table table-hover mb-0 align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th class="ps-4">日期</th>
+                            <th>分類</th>
+                            <th>描述</th>
+                            <th class="text-end">金額</th>
+                            <th class="text-end pe-4">操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for record in records %}
+                        <tr>
+                            <td class="ps-4">{{ record.date }}</td>
+                            <td>
+                                {% if record.category %}
+                                    <span class="badge bg-secondary">{{ record.category }}</span>
+                                {% else %}
+                                    <span class="text-muted">-</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-muted">{{ record.description }}</td>
+                            <td class="text-end fw-bold {% if record.type == 'income' %}text-success{% else %}text-danger{% endif %}">
+                                {% if record.type == 'income' %}+{% else %}-{% endif %} {{ record.amount }}
+                            </td>
+                            <td class="text-end pe-4">
+                                <a href="{{ url_for('records.edit_record', record_id=record.id) }}" class="btn btn-sm btn-outline-primary me-1">編輯</a>
+                                <form action="{{ url_for('records.delete_record', record_id=record.id) }}" method="POST" class="d-inline" onsubmit="return confirm('確定要刪除這筆紀錄嗎？');">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger">刪除</button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="text-center py-5 text-muted">
+                <p class="mb-0">目前尚無任何收支紀錄，趕快來記下第一筆吧！</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

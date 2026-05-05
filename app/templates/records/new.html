@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card shadow-sm border-0 mb-5">
+            <div class="card-header bg-white py-3">
+                <h5 class="mb-0 fw-bold">新增收支紀錄</h5>
+            </div>
+            <div class="card-body p-4">
+                <form action="{{ url_for('records.create_record') }}" method="POST">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="type" class="form-label">收支類型 <span class="text-danger">*</span></label>
+                            <select class="form-select" id="type" name="type" required>
+                                <option value="expense" selected>支出 (Expense)</option>
+                                <option value="income">收入 (Income)</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="date" class="form-label">日期 <span class="text-danger">*</span></label>
+                            <input type="date" class="form-control" id="date" name="date" required>
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="amount" class="form-label">金額 <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                                <span class="input-group-text">$</span>
+                                <input type="number" class="form-control" id="amount" name="amount" min="0" placeholder="0" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="category" class="form-label">分類</label>
+                            <input type="text" class="form-control" id="category" name="category" placeholder="例如：飲食、交通、薪水">
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="description" class="form-label">描述</label>
+                        <textarea class="form-control" id="description" name="description" rows="2" placeholder="記下一些細節..."></textarea>
+                    </div>
+
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a href="{{ url_for('records.index') }}" class="btn btn-light me-md-2">取消</a>
+                        <button type="submit" class="btn btn-primary">儲存紀錄</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // 預設日期為今天
+    document.addEventListener('DOMContentLoaded', function() {
+        if (!document.getElementById('date').value) {
+            document.getElementById('date').valueAsDate = new Date();
+        }
+    });
+</script>
+{% endblock %}
