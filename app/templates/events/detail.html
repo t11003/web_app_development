@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row align-items-start">
+    <div class="col-lg-8">
+        <div class="glass-panel p-4 p-md-5 mb-4">
+            <h1 class="fw-bold mb-3">{{ event.title }}</h1>
+            <div class="d-flex align-items-center mb-4 text-muted border-bottom border-secondary pb-3">
+                <span class="me-4"><i class="bi bi-calendar"></i> {{ event.event_date.strftime('%Y-%m-%d %H:%M') }}</span>
+                <span><i class="bi bi-geo-alt"></i> {{ event.location }}</span>
+            </div>
+            <div class="content lh-lg" style="white-space: pre-wrap;">{{ event.description }}</div>
+        </div>
+    </div>
+    
+    <div class="col-lg-4">
+        <div class="glass-panel p-4 position-sticky" style="top: 100px;">
+            <h4 class="mb-4 fw-bold">報名狀態</h4>
+            
+            <div class="d-flex justify-content-between mb-3 border-bottom border-dark pb-2">
+                <span class="text-muted">開放總額</span>
+                <span class="fw-bold fs-5">{{ event.capacity }} 人</span>
+            </div>
+            <div class="d-flex justify-content-between mb-4 border-bottom border-dark pb-2">
+                <span class="text-muted">已正取</span>
+                <span class="fw-bold fs-5 text-primary">{{ confirmed_count }} 人</span>
+            </div>
+
+            {% if user_reg %}
+                <div class="alert alert-{% if user_reg.status == 'Confirmed' %}success{% else %}warning{% endif %} glass-alert mb-4">
+                    <h6 class="alert-heading fw-bold mb-1">
+                        {% if user_reg.status == 'Confirmed' %}
+                            🎉 報名成功 (正取)
+                        {% else %}
+                            ⏳ 候補中
+                        {% endif %}
+                    </h6>
+                    <small>您已登記參加此活動。</small>
+                </div>
+                <form action="{{ url_for('registration.cancel_registration', event_id=event.id) }}" method="POST">
+                    <button type="submit" class="btn btn-outline-danger w-100 rounded-pill glass-btn" onclick="return confirm('確定要取消報名嗎？您的空缺將順延給下一位候補。');">
+                        取消報名
+                    </button>
+                </form>
+            {% else %}
+                {% if session.get('user_id') %}
+                    <form action="{{ url_for('registration.register_event', event_id=event.id) }}" method="POST">
+                        <button type="submit" class="btn btn-primary w-100 py-2 rounded-pill shadow-sm">
+                            {% if confirmed_count >= event.capacity %}
+                                滿額（登記候補）
+                            {% else %}
+                                立即報名
+                            {% endif %}
+                        </button>
+                    </form>
+                {% else %}
+                    <a href="{{ url_for('auth.login') }}" class="btn btn-primary w-100 py-2 rounded-pill shadow-sm mb-2">登入後報名</a>
+                {% endif %}
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="auth-wrapper">
+    <div class="glass-panel text-center">
+        <h2 class="mb-4 fw-bold">歡迎回來</h2>
+        <p class="text-muted mb-4">登入 NexEvent 帳號以繼續操作</p>
+        
+        <form method="POST" action="{{ url_for('auth.login') }}" class="text-start">
+            <div class="mb-3">
+                <label for="email" class="form-label">電子信箱</label>
+                <input type="email" class="form-control" id="email" name="email" required placeholder="name@example.com">
+            </div>
+            
+            <div class="mb-4">
+                <label for="password" class="form-label">密碼</label>
+                <input type="password" class="form-control" id="password" name="password" required placeholder="••••••••">
+            </div>
+            
+            <button type="submit" class="btn btn-primary w-100 py-2 rounded-pill">登入帳號</button>
+        </form>
+        
+        <div class="mt-4 text-muted">
+            還沒有帳號嗎？ <a href="{{ url_for('auth.register') }}" class="text-primary text-decoration-none fw-bold">立即註冊</a>
+        </div>
+    </div>
+</div>
+{% endblock %}
