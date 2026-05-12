@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="mb-5">
+    <h2 class="fw-bold mb-3">我的報名紀錄</h2>
+    <p class="text-muted">隨時追蹤您的各項活動報名狀態與候補進度</p>
+</div>
+
+<div class="glass-panel p-0 overflow-hidden">
+    {% if registrations %}
+    <div class="table-responsive">
+        <table class="table table-dark table-hover mb-0" style="background: transparent;">
+            <thead>
+                <tr class="text-muted" style="border-bottom: 2px solid var(--surface-border);">
+                    <th class="ps-4 py-3">活動名稱</th>
+                    <th class="py-3">舉辦時間</th>
+                    <th class="py-3">地點</th>
+                    <th class="py-3">報名狀態</th>
+                    <th class="text-end pe-4 py-3">操作</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for reg in registrations %}
+                <tr style="border-bottom: 1px solid var(--surface-border);">
+                    <td class="ps-4 py-3 fw-bold align-middle">
+                        <a href="{{ url_for('event.event_detail', event_id=reg.event.id) }}" class="text-white text-decoration-none hover-primary">
+                            {{ reg.event.title }}
+                        </a>
+                    </td>
+                    <td class="py-3 align-middle">{{ reg.event.event_date.strftime('%Y-%m-%d %H:%M') }}</td>
+                    <td class="py-3 align-middle">{{ reg.event.location }}</td>
+                    <td class="py-3 align-middle">
+                        {% if reg.status == 'Confirmed' %}
+                            <span class="badge rounded-pill bg-success px-3 py-2">✅ 已正取</span>
+                        {% elif reg.status == 'Waitlist' %}
+                            <span class="badge rounded-pill bg-warning text-dark px-3 py-2">⏳ 候補中</span>
+                        {% else %}
+                            <span class="badge rounded-pill bg-secondary px-3 py-2">❌ 已取消</span>
+                        {% endif %}
+                    </td>
+                    <td class="text-end pe-4 py-3 align-middle">
+                        {% if reg.status != 'Cancelled' %}
+                        <form action="{{ url_for('registration.cancel_registration', event_id=reg.event.id) }}" method="POST" class="d-inline">
+                            <button type="submit" class="btn btn-outline-danger btn-sm rounded-pill px-3 glass-btn" onclick="return confirm('確定要取消嗎？');">
+                                取消報名
+                            </button>
+                        </form>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="p-5 text-center">
+        <h4 class="text-muted mb-0">您還沒有報名任何活動 📝</h4>
+        <a href="{{ url_for('main.index') }}" class="btn btn-primary mt-4 rounded-pill px-4">去探索活動</a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

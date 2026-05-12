@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="auth-wrapper" style="max-width: 600px;">
+    <div class="glass-panel">
+        <h2 class="mb-4 fw-bold text-center">建立新活動</h2>
+        <p class="text-muted mb-4 text-center">請填寫詳細說明，吸引大家報名</p>
+        
+        <form method="POST" action="{{ url_for('event.create_event') }}">
+            <div class="mb-3">
+                <label for="title" class="form-label">活動名稱</label>
+                <input type="text" class="form-control" id="title" name="title" required placeholder="如：資工之夜">
+            </div>
+
+            <div class="mb-3">
+                <label for="event_date" class="form-label">活動時間</label>
+                <input type="datetime-local" class="form-control" id="event_date" name="event_date" required>
+            </div>
+
+            <div class="mb-3">
+                <label for="location" class="form-label">活動地點</label>
+                <input type="text" class="form-control" id="location" name="location" required placeholder="如：綜合大樓 101">
+            </div>
+
+            <div class="mb-3">
+                <label for="capacity" class="form-label">正取名額上限</label>
+                <input type="number" class="form-control" id="capacity" name="capacity" required min="1">
+            </div>
+
+            <div class="mb-4">
+                <label for="description" class="form-label">詳細說明</label>
+                <textarea class="form-control" id="description" name="description" rows="5" required></textarea>
+            </div>
+            
+            <button type="submit" class="btn btn-primary w-100 py-2 rounded-pill">發佈活動</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

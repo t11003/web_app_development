@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="auth-wrapper">
+    <div class="glass-panel text-center">
+        <h2 class="mb-4 fw-bold">建立帳號</h2>
+        <p class="text-muted mb-4">加入 NexEvent 開始探索校園活動</p>
+        
+        <form method="POST" action="{{ url_for('auth.register') }}" class="text-start">
+            <div class="mb-3">
+                <label for="username" class="form-label">顯示名稱</label>
+                <input type="text" class="form-control" id="username" name="username" required placeholder="您的名字">
+            </div>
+
+            <div class="mb-3">
+                <label for="email" class="form-label">電子信箱</label>
+                <input type="email" class="form-control" id="email" name="email" required placeholder="name@example.com">
+            </div>
+            
+            <div class="mb-4">
+                <label for="password" class="form-label">設定密碼</label>
+                <input type="password" class="form-control" id="password" name="password" required placeholder="至少 6 個字元">
+            </div>
+            
+            <button type="submit" class="btn btn-primary w-100 py-2 rounded-pill">註冊帳號</button>
+        </form>
+        
+        <div class="mt-4 text-muted">
+            已經有帳號了嗎？ <a href="{{ url_for('auth.login') }}" class="text-primary text-decoration-none fw-bold">馬上登入</a>
+        </div>
+    </div>
+</div>
+{% endblock %}
